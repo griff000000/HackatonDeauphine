@@ -79,6 +79,55 @@ body {
   min-height: 100vh;
 }
 
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+@keyframes gradientGlide {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Elegant Gradient Hover Button Utility */
+.gradient-hover-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+.gradient-hover-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Oversized linear gradient for smooth movement without blur artifacts */
+  background: linear-gradient(120deg, #F63BE3, #FF5F4A, #C827ED, #DE474C, #F63BE3);
+  background-size: 300% 300%;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: -1;
+}
+
+.gradient-hover-btn:not(:disabled):hover::before {
+  opacity: 1;
+  animation: gradientGlide 4s ease infinite;
+}
+
+.gradient-hover-btn:not(:disabled):hover {
+  color: white !important;
+  border-color: transparent !important;
+}
+
+.gradient-hover-btn:not(:disabled):hover svg path {
+  stroke: white !important;
+  fill: white !important;
+}
+
 a {
   color: inherit;
   text-decoration: none;

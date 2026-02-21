@@ -1,11 +1,18 @@
 'use client'
 
 import React from 'react'
+import { motion } from 'framer-motion'
 import styles from '@/styles/Navbar.module.css'
+import { navbarVariants } from '@/utils/animations'
 
 export default function Navbar() {
   return (
-    <nav className={styles.navbar}>
+    <motion.nav 
+      className={styles.navbar}
+      variants={navbarVariants}
+      initial="hidden"
+      animate="show"
+    >
       <div className={styles.left}>
         <div className={styles.logo}>
           <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -31,7 +38,7 @@ export default function Navbar() {
         </div>
       </div>
       <div className={styles.right}>
-        <button className={styles.connectButton}>
+        <button className={`${styles.connectButton} gradient-hover-btn`}>
           <span>Connect Wallet</span>
           <svg width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 0.5L5.5 7L0 13.5" stroke="black" strokeWidth="1.5"/>
@@ -39,6 +46,6 @@ export default function Navbar() {
           </svg>
         </button>
       </div>
-    </nav>
+    </motion.nav>
   )
 }

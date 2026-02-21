@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useMotionValue, animate } from 'framer-motion'
 import { UploadSimple, FilePdf, FileImage, FileDoc, File as FileIcon, X, LockSimple, Check, Copy, ArrowRight } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import styles from '@/styles/CreateEscrow.module.css'
+import { staggerContainer, itemVariants } from '@/utils/animations'
 
 const getDaysInMonth = (month: number, year: number) => {
   return new Date(year, month + 1, 0).getDate()
@@ -206,9 +207,9 @@ export default function CreateEscrow() {
   }
 
   return (
-    <motion.div layout className={styles.wrapper}>
+    <motion.div layout className={styles.wrapper} variants={staggerContainer} initial="hidden" animate="show">
       {/* Header pill */}
-      <motion.div layout transition={{ layout: { duration: 0.6, ease: [0.25, 1, 0.5, 1] } }} className={styles.headerPill}>
+      <motion.div layout transition={{ layout: { duration: 0.6, ease: [0.25, 1, 0.5, 1] } }} className={styles.headerPill} variants={itemVariants}>
         <AnimatePresence>
           <motion.div layout style={{ display: 'grid', alignItems: 'center', justifyItems: 'start' }}>
             {status === 'form' && (
@@ -306,10 +307,10 @@ export default function CreateEscrow() {
           >
             <motion.div 
               className={styles.card}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -20, filter: "blur(12px)" }}
+              transition={{ type: "spring", stiffness: 120, damping: 20, delay: 0.15 }}
             >
               <div className={styles.formFields}>
           {/* Project Name */}
@@ -558,37 +559,15 @@ export default function CreateEscrow() {
         </div>
 
         {/* CTA Button */}
-        {!walletConnected ? (
+        <motion.div variants={itemVariants}>
+          {!walletConnected ? (
           <motion.button 
-            className={styles.ctaButton} 
+            className={`${styles.ctaButton} gradient-hover-btn`} 
             type="button"
             disabled={!isFormComplete}
             onClick={() => setWalletConnected(true)}
-            initial="initial"
-            whileHover={isFormComplete ? "hover" : "initial"}
           >
-            <div className={styles.rollOverContainer}>
-              <motion.span 
-                className={styles.rollOverText}
-                variants={{
-                  initial: { y: 0 },
-                  hover: { y: "-100%" }
-                }}
-                transition={{ duration: 0.3, ease: [0.33, 1, 0.68, 1] }}
-              >
-                Connect Wallet
-              </motion.span>
-              <motion.span 
-                className={styles.rollOverTextHover}
-                variants={{
-                  initial: { y: "100%" },
-                  hover: { y: 0 }
-                }}
-                transition={{ duration: 0.3, ease: [0.33, 1, 0.68, 1] }}
-              >
-                Connect Wallet
-              </motion.span>
-            </div>
+            Connect Wallet
             <svg width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M0 0.5L5.5 7L0 13.5" stroke="currentColor" strokeWidth="1.5"/>
               <path d="M4.5 0.5L10 7L4.5 13.5" stroke="currentColor" strokeWidth="1.5"/>
@@ -596,7 +575,7 @@ export default function CreateEscrow() {
           </motion.button>
         ) : (
           <motion.button 
-            className={styles.ctaButtonConfirm} 
+            className={`${styles.ctaButtonConfirm} gradient-hover-btn`}
             type="button"
             initial="initial"
             whileHover="hover"
@@ -626,7 +605,8 @@ export default function CreateEscrow() {
               </motion.span>
             </div>
           </motion.button>
-        )}
+          )}
+        </motion.div>
             </motion.div>
           </motion.div>
         )}
@@ -659,7 +639,7 @@ export default function CreateEscrow() {
 
             <div className={styles.successButtons}>
               <button 
-                className={styles.btnVoirContrat} 
+                className={`${styles.btnVoirContrat} gradient-hover-btn`} 
                 onClick={() => router.push('/contract/1EbUwQNSwW')}
               >
                 Voir le contrat <ArrowRight size={14} weight="bold" />

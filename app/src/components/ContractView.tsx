@@ -338,7 +338,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                 <p className={styles.actionSubtitle}>Le freelance doit déposer 450 ALPH pour activer le contrat.</p>
               </div>
 
-              <button className={styles.btnCancelWhite}>
+              <button className={`${styles.btnCancelWhite} gradient-hover-btn`}>
                 <XCircle size={18} weight="bold" color="black" />
                 Cancel & Withdraw
               </button>

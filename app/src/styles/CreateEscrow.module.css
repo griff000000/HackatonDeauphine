@@ -502,6 +502,26 @@
   cursor: not-allowed;
 }
 
+.rollOverContainer {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  height: var(--lh-caption);
+}
+
+.rollOverText {
+  display: block;
+}
+
+.rollOverTextHover {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 .ctaButtonConfirm {
   display: flex;
   align-items: center;

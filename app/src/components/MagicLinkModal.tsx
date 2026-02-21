@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Copy, Info } from '@phosphor-icons/react';
 import styles from '@/styles/MagicLinkModal.module.css';
 import Image from 'next/image';
+import { staggerContainer, itemVariants } from '@/utils/animations';
 
 interface MagicLinkModalProps {
   contractId: string;
@@ -10,24 +11,10 @@ interface MagicLinkModalProps {
 }
 
 export default function MagicLinkModal({ contractId, onConnectWallet }: MagicLinkModalProps) {
-  const modalVariants = {
-    hidden: { opacity: 0, scale: 0.95, y: 20 },
-    visible: { 
-      opacity: 1, 
-      scale: 1, 
-      y: 0,
-      transition: {
-        type: 'spring' as const,
-        stiffness: 300,
-        damping: 30,
-        delay: 0.1
-      }
-    }
-  };
 
   const backdropVariants = {
     hidden: { opacity: 0, backdropFilter: 'blur(0px)' },
-    visible: { 
+    show: { 
       opacity: 1, 
       backdropFilter: 'blur(8px)',
       transition: { duration: 0.3 }
@@ -39,14 +26,14 @@ export default function MagicLinkModal({ contractId, onConnectWallet }: MagicLin
       className={styles.modalOverlay}
       variants={backdropVariants}
       initial="hidden"
-      animate="visible"
+      animate="show"
     >
       <motion.div 
         className={styles.modalContainer}
-        variants={modalVariants}
+        variants={staggerContainer}
       >
         {/* Top Badge */}
-        <div className={styles.badgeContainer}>
+        <motion.div variants={itemVariants} className={styles.badgeContainer}>
           <div className={styles.iconWrapper}>
             <div className={styles.glowEffect} />
             <div className={styles.iconInner}>
@@ -59,21 +46,21 @@ export default function MagicLinkModal({ contractId, onConnectWallet }: MagicLin
             </div>
           </div>
           <span className={styles.badgeText}>Escrow Contract</span>
-        </div>
+        </motion.div>
 
         {/* Main Card */}
-        <div className={styles.mainCard}>
+        <motion.div variants={itemVariants} className={styles.mainCard}>
           
           {/* Header */}
-          <div className={styles.headerSection}>
+          <motion.div variants={itemVariants} className={styles.headerSection}>
             <h2 className={styles.title}>You&apos;ve been invited to an escrow</h2>
             <p className={styles.subtitle}>
               Connect your Alephium wallet to access the contract and interact with this escrow.
             </p>
-          </div>
+          </motion.div>
 
           {/* Contract Details Box */}
-          <div className={styles.detailsBox}>
+          <motion.div variants={itemVariants} className={styles.detailsBox}>
             <span className={styles.contractId}>#ESC-{contractId}</span>
             <h3 className={styles.contractName}>Refonte UI/UX Dashboard blockflow visualisation</h3>
             
@@ -106,21 +93,21 @@ export default function MagicLinkModal({ contractId, onConnectWallet }: MagicLin
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Alert Message */}
-          <div className={styles.alertBox}>
+          <motion.div variants={itemVariants} className={styles.alertBox}>
             <div className={styles.alertContent}>
               <Info size={20} color="#555555" />
               <p className={styles.alertText}>
                 Funds are already locked in the smart contract. Connect your wallet to review the details and accept the mission.
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Action Area */}
-          <div className={styles.actionArea}>
-            <button className={styles.connectWalletBtn} onClick={onConnectWallet}>
+          <motion.div variants={itemVariants} className={styles.actionArea}>
+            <button className={`${styles.connectWalletBtn} gradient-hover-btn`} onClick={onConnectWallet}>
               Connect Wallet
               {/* Alephium Logo Black */}
                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -133,9 +120,9 @@ export default function MagicLinkModal({ contractId, onConnectWallet }: MagicLin
                 Create an Alephium wallet →
               </a>
             </div>
-          </div>
+          </motion.div>
 
-        </div>
+        </motion.div>
       </motion.div>
     </motion.div>
   );
