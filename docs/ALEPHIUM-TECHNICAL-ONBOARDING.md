@@ -83,7 +83,7 @@ Contract Counter(mut count: U256) {
 ## Prerequisites
 
 - Node.js >= 16
-- pnpm >= 8 (or bun/bunx)
+- npm>= 8 (or bun/bunx)
 - Docker
 - VS Code (Ralph LSP recommended)
 
@@ -111,7 +111,7 @@ Services started:
 ```bash
 npx @alephium/cli init my-hackathon-project
 cd my-hackathon-project
-pnpm install
+npminstall
 ```
 
 ---
@@ -129,7 +129,7 @@ Compiles `.ral` → generates TypeScript bindings in `artifacts/ts/`.
 ## 4️⃣ Run Tests
 
 ```bash
-pnpm run test
+npmrun test
 ```
 
 ---
@@ -387,11 +387,11 @@ docker-compose up -d
 
 npx @alephium/cli init my-project
 cd my-project
-pnpm install
+npminstall
 
 # Dev Loop
 npx @alephium/cli compile
-pnpm run test
+npmrun test
 npx @alephium/cli deploy
 ```
 

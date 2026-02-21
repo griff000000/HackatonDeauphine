@@ -5,7 +5,7 @@ This template monorepo was designed to provide a developer-friendly experience t
 - app: contains the Next.js frontend part of the dApp
 - contracts: contains the dApp contracts
 
-It uses **pnpm workspaces** to manage both app and contract projects from the monorepo root.
+It uses **npm workspaces** to manage both app and contract projects from the monorepo root.
 
 ## Local development
 
@@ -18,31 +18,31 @@ Start a local devnet for testing and development. Please refer to the [Getting S
 ### Install dependencies
 
 ```
-pnpm install
+npm install
 ```
 
 ### Compile the contracts
 
 ```
-pnpm compile
+npm compile
 ```
 
 ### Deploy the contracts
 
 ```
-pnpm deploy
+npm deploy
 ```
 
 ### Build the contracts package
 
 ```
-pnpm build:contracts
+npm build:contracts
 ```
 
 ### Run the app
 
 ```
-pnpm dev
+npm dev
 ```
 
 ### Install an Alephium wallet
@@ -51,10 +51,10 @@ Download an [Alephium wallet](https://alephium.org/#wallets), and connect it to 
 
 ## Testnet, Mainnet, and More
 
-You could use pnpm workspace to run commands in the contracts or app directory.
+You could use npm workspace to run commands in the contracts or app directory.
 
 ```
-pnpm <my-contracts|my-dapp> <command>
+npm <my-contracts|my-dapp> <command>
 ```
 
 You could also get some testnet tokens from the [Faucet](https://docs.alephium.org/infrastructure/public-services/#testnet-faucet).

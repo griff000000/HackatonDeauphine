@@ -15,7 +15,7 @@ You are assisting with smart contract development on the **Alephium** blockchain
 
 ```bash
 npx @alephium/cli compile              # Compile .ral contracts → artifacts/ts/
-pnpm run test                            # Run tests
+npmrun test                            # Run tests
 npx @alephium/cli deploy               # Deploy to devnet
 npx @alephium/cli deploy --network testnet  # Deploy to testnet
 ```
