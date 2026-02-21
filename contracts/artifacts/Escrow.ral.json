@@ -1,0 +1,248 @@
+{
+  "version": "v4.3.0",
+  "name": "Escrow",
+  "bytecode": "0a0a40244048408140b44107412d416c417a41884196010700000014d3ea5f300da0010c2f0c7bb4ce01450e7bb4ce04a90da10105ce01ce045f010001010013d3c552dfefa0010d2f0c7bb4ce01450e7b1600a1000ea10106ce0116005f01020001004020d3f45a8bd3a0010e2f0c7bb4ce00450d7bce03ce042a1700ce011600a810a101ce01110e0cce07010307ce0116005fce00b001000001001ed338ed5670a0010d2f7a4b0418a0010e2f0c7bb417001600ce00457a4b04181600ce0145107b0fa1010816005e0102010200402fd3dab60f7ea0010f2f0c7bb4ce02450f7b16004c0ece03ce042a1701ce011601a8ce010e0e0cce0701034a0cce00ce03a8ce01ce04a8ce01130f0e0cce07010410a10109ce0216005fce00b0010200000015d3a745d4b2a0010c2f0c7bb4ce00450d7bce00ce03a810a1010ace005ece00b001020001004022d388df9451a0010e2f0c7b56ce05138a4cb8002a33117bce03ce042a1700ce011600a810a101ce01110e0cce07010307ce0116005fce00b0010000000103d351f3da08a00102010000000103d33600ec11a00002010000000103d3e3c12fb2ce0602",
+  "codeHash": "eff62d0d8d717d21deabb92da63bbe28390e1da74637a92889738e74e000fbf4",
+  "fieldsSig": {
+    "names": [
+      "client",
+      "freelancer",
+      "arbiter",
+      "amount",
+      "collateral",
+      "deadline",
+      "cdcHash",
+      "trustRegistry",
+      "deliverableLink",
+      "status"
+    ],
+    "types": [
+      "Address",
+      "Address",
+      "Address",
+      "U256",
+      "U256",
+      "U256",
+      "ByteVec",
+      "TrustRegistry",
+      "ByteVec",
+      "U256"
+    ],
+    "isMutable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "eventsSig": [
+    {
+      "name": "FreelancerAccepted",
+      "fieldNames": [
+        "freelancer",
+        "collateral"
+      ],
+      "fieldTypes": [
+        "Address",
+        "U256"
+      ]
+    },
+    {
+      "name": "WorkDelivered",
+      "fieldNames": [
+        "freelancer",
+        "link"
+      ],
+      "fieldTypes": [
+        "Address",
+        "ByteVec"
+      ]
+    },
+    {
+      "name": "PaymentReleased",
+      "fieldNames": [
+        "to",
+        "totalAmount"
+      ],
+      "fieldTypes": [
+        "Address",
+        "U256"
+      ]
+    },
+    {
+      "name": "DisputeOpened",
+      "fieldNames": [
+        "opener"
+      ],
+      "fieldTypes": [
+        "Address"
+      ]
+    },
+    {
+      "name": "DisputeResolved",
+      "fieldNames": [
+        "arbiter",
+        "toFreelancer"
+      ],
+      "fieldTypes": [
+        "Address",
+        "Bool"
+      ]
+    },
+    {
+      "name": "EscrowCancelled",
+      "fieldNames": [
+        "client"
+      ],
+      "fieldTypes": [
+        "Address"
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "name": "acceptAndDeposit",
+      "paramNames": [],
+      "paramTypes": [],
+      "paramIsMutable": [],
+      "returnTypes": []
+    },
+    {
+      "name": "deliver",
+      "paramNames": [
+        "link"
+      ],
+      "paramTypes": [
+        "ByteVec"
+      ],
+      "paramIsMutable": [
+        false
+      ],
+      "returnTypes": []
+    },
+    {
+      "name": "release",
+      "paramNames": [],
+      "paramTypes": [],
+      "paramIsMutable": [],
+      "returnTypes": []
+    },
+    {
+      "name": "dispute",
+      "paramNames": [],
+      "paramTypes": [],
+      "paramIsMutable": [],
+      "returnTypes": []
+    },
+    {
+      "name": "resolve",
+      "paramNames": [
+        "toFreelancer"
+      ],
+      "paramTypes": [
+        "Bool"
+      ],
+      "paramIsMutable": [
+        false
+      ],
+      "returnTypes": []
+    },
+    {
+      "name": "cancelByClient",
+      "paramNames": [],
+      "paramTypes": [],
+      "paramIsMutable": [],
+      "returnTypes": []
+    },
+    {
+      "name": "autoClaim",
+      "paramNames": [],
+      "paramTypes": [],
+      "paramIsMutable": [],
+      "returnTypes": []
+    },
+    {
+      "name": "getStatus",
+      "paramNames": [],
+      "paramTypes": [],
+      "paramIsMutable": [],
+      "returnTypes": [
+        "U256"
+      ]
+    },
+    {
+      "name": "getDeliverableLink",
+      "paramNames": [],
+      "paramTypes": [],
+      "paramIsMutable": [],
+      "returnTypes": [
+        "ByteVec"
+      ]
+    },
+    {
+      "name": "getCdcHash",
+      "paramNames": [],
+      "paramTypes": [],
+      "paramIsMutable": [],
+      "returnTypes": [
+        "ByteVec"
+      ]
+    }
+  ],
+  "constants": [],
+  "enums": [
+    {
+      "name": "ErrorCodes",
+      "fields": [
+        {
+          "name": "InvalidStatus",
+          "value": {
+            "type": "U256",
+            "value": "0"
+          }
+        },
+        {
+          "name": "OnlyClient",
+          "value": {
+            "type": "U256",
+            "value": "1"
+          }
+        },
+        {
+          "name": "OnlyFreelancer",
+          "value": {
+            "type": "U256",
+            "value": "2"
+          }
+        },
+        {
+          "name": "OnlyArbiter",
+          "value": {
+            "type": "U256",
+            "value": "3"
+          }
+        },
+        {
+          "name": "OnlyClientOrFreelancer",
+          "value": {
+            "type": "U256",
+            "value": "4"
+          }
+        },
+        {
+          "name": "AutoClaimTooEarly",
+          "value": {
+            "type": "U256",
+            "value": "5"
+          }
+        }
+      ]
+    }
+  ]
+}

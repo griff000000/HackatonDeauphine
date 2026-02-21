@@ -1,0 +1,68 @@
+Contract TrustRegistry() {
+
+    mapping[Address, U256] scores
+
+    event ScoreUpdated(freelancer: Address, oldScore: U256, newScore: U256)
+
+    pub fn getScore(freelancer: Address) -> U256 {
+        if (scores.contains!(freelancer)) {
+            return scores[freelancer]
+        } else {
+            return 50
+        }
+    }
+
+    pub fn calculateCollateral(baseCollateral: U256, freelancer: Address) -> U256 {
+        let score = getScore(freelancer)
+        let mut factor = 100 - score
+        if (factor < 10) {
+            factor = 10
+        }
+        return baseCollateral * factor / 100
+    }
+
+    @using(preapprovedAssets = true, checkExternalCaller = false)
+    pub fn initScore(freelancer: Address) -> () {
+        if (!scores.contains!(freelancer)) {
+            scores.insert!(callerAddress!(), freelancer, 50)
+        }
+    }
+
+    @using(checkExternalCaller = false)
+    pub fn increaseScore(freelancer: Address, amount: U256) -> () {
+        if (scores.contains!(freelancer)) {
+            let oldScore = scores[freelancer]
+            let mut newScore = oldScore + amount
+            if (newScore > 100) {
+                newScore = 100
+            }
+            scores[freelancer] = newScore
+            emit ScoreUpdated(freelancer, oldScore, newScore)
+        } else {
+            let mut newScore = 50 + amount
+            if (newScore > 100) {
+                newScore = 100
+            }
+            emit ScoreUpdated(freelancer, 50, newScore)
+        }
+    }
+
+    @using(checkExternalCaller = false)
+    pub fn decreaseScore(freelancer: Address, amount: U256) -> () {
+        if (scores.contains!(freelancer)) {
+            let oldScore = scores[freelancer]
+            let mut newScore = 0u
+            if (oldScore > amount) {
+                newScore = oldScore - amount
+            }
+            scores[freelancer] = newScore
+            emit ScoreUpdated(freelancer, oldScore, newScore)
+        } else {
+            let mut newScore = 0u
+            if (50 > amount) {
+                newScore = 50 - amount
+            }
+            emit ScoreUpdated(freelancer, 50, newScore)
+        }
+    }
+}

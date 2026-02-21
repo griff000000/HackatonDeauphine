@@ -1,18 +1,15 @@
 {
   "version": "v4.3.0",
-  "name": "Withdraw",
-  "bytecodeTemplate": "01010300000005{1}0d0c{0}0105",
+  "name": "ClaimAfterDeadline",
+  "bytecodeTemplate": "010103000000040c0c{0}0106",
   "fieldsSig": {
     "names": [
-      "token",
-      "amount"
+      "escrow"
     ],
     "types": [
-      "TokenFaucet",
-      "U256"
+      "Escrow"
     ],
     "isMutable": [
-      false,
       false
     ]
   },

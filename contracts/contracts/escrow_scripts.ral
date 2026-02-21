@@ -1,0 +1,27 @@
+TxScript AcceptAndDeposit(escrow: Escrow, collateral: U256) {
+    escrow.acceptAndDeposit{callerAddress!() -> ALPH: collateral}()
+}
+
+TxScript Deliver(escrow: Escrow, link: ByteVec) {
+    escrow.deliver(link)
+}
+
+TxScript ReleasePayment(escrow: Escrow) {
+    escrow.release()
+}
+
+TxScript OpenDispute(escrow: Escrow) {
+    escrow.dispute()
+}
+
+TxScript ResolveDispute(escrow: Escrow, toFreelancer: Bool) {
+    escrow.resolve(toFreelancer)
+}
+
+TxScript CancelEscrow(escrow: Escrow) {
+    escrow.cancelByClient()
+}
+
+TxScript ClaimAfterDeadline(escrow: Escrow) {
+    escrow.autoClaim()
+}

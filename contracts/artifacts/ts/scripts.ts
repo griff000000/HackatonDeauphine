@@ -12,9 +12,45 @@ import {
   HexString,
 } from "@alephium/web3";
 import { getContractByCodeHash } from "./contracts";
-import { default as WithdrawScriptJson } from "../Withdraw.ral.json";
+import { default as AcceptAndDepositScriptJson } from "../AcceptAndDeposit.ral.json";
+import { default as CancelEscrowScriptJson } from "../CancelEscrow.ral.json";
+import { default as ClaimAfterDeadlineScriptJson } from "../ClaimAfterDeadline.ral.json";
+import { default as DeliverScriptJson } from "../Deliver.ral.json";
+import { default as OpenDisputeScriptJson } from "../OpenDispute.ral.json";
+import { default as ReleasePaymentScriptJson } from "../ReleasePayment.ral.json";
+import { default as ResolveDisputeScriptJson } from "../ResolveDispute.ral.json";
 
-export const Withdraw = new ExecutableScript<{
-  token: HexString;
-  amount: bigint;
-}>(Script.fromJson(WithdrawScriptJson, "", []), getContractByCodeHash);
+export const AcceptAndDeposit = new ExecutableScript<{
+  escrow: HexString;
+  collateral: bigint;
+}>(Script.fromJson(AcceptAndDepositScriptJson, "", []), getContractByCodeHash);
+
+export const CancelEscrow = new ExecutableScript<{ escrow: HexString }>(
+  Script.fromJson(CancelEscrowScriptJson, "", []),
+  getContractByCodeHash
+);
+
+export const ClaimAfterDeadline = new ExecutableScript<{ escrow: HexString }>(
+  Script.fromJson(ClaimAfterDeadlineScriptJson, "", []),
+  getContractByCodeHash
+);
+
+export const Deliver = new ExecutableScript<{
+  escrow: HexString;
+  link: HexString;
+}>(Script.fromJson(DeliverScriptJson, "", []), getContractByCodeHash);
+
+export const OpenDispute = new ExecutableScript<{ escrow: HexString }>(
+  Script.fromJson(OpenDisputeScriptJson, "", []),
+  getContractByCodeHash
+);
+
+export const ReleasePayment = new ExecutableScript<{ escrow: HexString }>(
+  Script.fromJson(ReleasePaymentScriptJson, "", []),
+  getContractByCodeHash
+);
+
+export const ResolveDispute = new ExecutableScript<{
+  escrow: HexString;
+  toFreelancer: boolean;
+}>(Script.fromJson(ResolveDisputeScriptJson, "", []), getContractByCodeHash);

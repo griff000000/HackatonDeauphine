@@ -1,0 +1,28 @@
+{
+  "version": "v4.3.0",
+  "name": "Deliver",
+  "bytecodeTemplate": "01010300000005{1}0d0c{0}0101",
+  "fieldsSig": {
+    "names": [
+      "escrow",
+      "link"
+    ],
+    "types": [
+      "Escrow",
+      "ByteVec"
+    ],
+    "isMutable": [
+      false,
+      false
+    ]
+  },
+  "functions": [
+    {
+      "name": "main",
+      "paramNames": [],
+      "paramTypes": [],
+      "paramIsMutable": [],
+      "returnTypes": []
+    }
+  ]
+}

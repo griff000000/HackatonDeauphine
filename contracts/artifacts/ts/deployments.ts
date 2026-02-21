@@ -7,22 +7,34 @@ import {
   DeployContractExecutionResult,
   NetworkId,
 } from "@alephium/web3";
-import { TokenFaucet, TokenFaucetInstance } from ".";
+import {
+  TrustRegistry,
+  TrustRegistryInstance,
+  Escrow,
+  EscrowInstance,
+} from ".";
 import { default as devnetDeployments } from "../../deployments/.deployments.devnet.json";
 
 export type Deployments = {
   deployerAddress: string;
   contracts: {
-    TokenFaucet: DeployContractExecutionResult<TokenFaucetInstance>;
+    TrustRegistry: DeployContractExecutionResult<TrustRegistryInstance>;
+    Escrow: DeployContractExecutionResult<EscrowInstance>;
   };
 };
 
 function toDeployments(json: any): Deployments {
   const contracts = {
-    TokenFaucet: {
-      ...json.contracts["TokenFaucet"],
-      contractInstance: TokenFaucet.at(
-        json.contracts["TokenFaucet"].contractInstance.address
+    TrustRegistry: {
+      ...json.contracts["TrustRegistry"],
+      contractInstance: TrustRegistry.at(
+        json.contracts["TrustRegistry"].contractInstance.address
+      ),
+    },
+    Escrow: {
+      ...json.contracts["Escrow"],
+      contractInstance: Escrow.at(
+        json.contracts["Escrow"].contractInstance.address
       ),
     },
   };

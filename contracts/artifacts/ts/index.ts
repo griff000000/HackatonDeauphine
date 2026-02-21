@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export * from "./TokenFaucet";
+export * from "./Escrow";
+export * from "./TrustRegistry";
 export * from "./contracts";
 export * from "./scripts";

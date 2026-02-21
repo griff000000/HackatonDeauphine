@@ -1,0 +1,28 @@
+{
+  "version": "v4.3.0",
+  "name": "AcceptAndDeposit",
+  "bytecodeTemplate": "01010300000007b4{1}a20c0c{0}0100",
+  "fieldsSig": {
+    "names": [
+      "escrow",
+      "collateral"
+    ],
+    "types": [
+      "Escrow",
+      "U256"
+    ],
+    "isMutable": [
+      false,
+      false
+    ]
+  },
+  "functions": [
+    {
+      "name": "main",
+      "paramNames": [],
+      "paramTypes": [],
+      "paramIsMutable": [],
+      "returnTypes": []
+    }
+  ]
+}

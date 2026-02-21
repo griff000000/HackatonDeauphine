@@ -1,0 +1,25 @@
+{
+  "version": "v4.3.0",
+  "name": "ReleasePayment",
+  "bytecodeTemplate": "010103000000040c0c{0}0102",
+  "fieldsSig": {
+    "names": [
+      "escrow"
+    ],
+    "types": [
+      "Escrow"
+    ],
+    "isMutable": [
+      false
+    ]
+  },
+  "functions": [
+    {
+      "name": "main",
+      "paramNames": [],
+      "paramTypes": [],
+      "paramIsMutable": [],
+      "returnTypes": []
+    }
+  ]
+}

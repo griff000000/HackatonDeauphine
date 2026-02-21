@@ -1,0 +1,144 @@
+Contract Escrow(
+    client: Address,
+    freelancer: Address,
+    arbiter: Address,
+    amount: U256,
+    collateral: U256,
+    deadline: U256,
+    cdcHash: ByteVec,
+    trustRegistry: TrustRegistry,
+    mut deliverableLink: ByteVec,
+    mut status: U256
+) {
+
+    event FreelancerAccepted(freelancer: Address, collateral: U256)
+    event WorkDelivered(freelancer: Address, link: ByteVec)
+    event PaymentReleased(to: Address, totalAmount: U256)
+    event DisputeOpened(opener: Address)
+    event DisputeResolved(arbiter: Address, toFreelancer: Bool)
+    event EscrowCancelled(client: Address)
+
+    enum ErrorCodes {
+        InvalidStatus = 0
+        OnlyClient = 1
+        OnlyFreelancer = 2
+        OnlyArbiter = 3
+        OnlyClientOrFreelancer = 4
+        AutoClaimTooEarly = 5
+    }
+
+    // Freelancer deposite sa caution et active l'escrow
+    @using(preapprovedAssets = true, payToContractOnly = true, updateFields = true, checkExternalCaller = false)
+    pub fn acceptAndDeposit() -> () {
+        assert!(status == 0, ErrorCodes.InvalidStatus)
+        assert!(callerAddress!() == freelancer, ErrorCodes.OnlyFreelancer)
+
+        transferTokenToSelf!(callerAddress!(), ALPH, collateral)
+        status = 1
+
+        emit FreelancerAccepted(freelancer, collateral)
+    }
+
+    // Freelancer soumet le lien vers son travail
+    @using(updateFields = true)
+    pub fn deliver(link: ByteVec) -> () {
+        assert!(status == 1, ErrorCodes.InvalidStatus)
+        checkCaller!(callerAddress!() == freelancer, ErrorCodes.OnlyFreelancer)
+
+        deliverableLink = link
+        status = 2
+
+        emit WorkDelivered(freelancer, link)
+    }
+
+    // Client valide et libère les fonds
+    @using(assetsInContract = true, updateFields = true)
+    pub fn release() -> () {
+        assert!(status == 2, ErrorCodes.InvalidStatus)
+        checkCaller!(callerAddress!() == client, ErrorCodes.OnlyClient)
+
+        let total = amount + collateral
+        transferTokenFromSelf!(freelancer, ALPH, total)
+        status = 4
+
+        trustRegistry.increaseScore(freelancer, 5)
+
+        emit PaymentReleased(freelancer, total)
+        destroySelf!(client)
+    }
+
+    // Client ou freelancer ouvre un litige
+    @using(updateFields = true)
+    pub fn dispute() -> () {
+        assert!(status == 1 || status == 2, ErrorCodes.InvalidStatus)
+        let caller = callerAddress!()
+        checkCaller!(caller == client || caller == freelancer, ErrorCodes.OnlyClientOrFreelancer)
+
+        status = 3
+
+        emit DisputeOpened(caller)
+    }
+
+    // L'arbitre tranche le litige
+    @using(assetsInContract = true, updateFields = true)
+    pub fn resolve(toFreelancer: Bool) -> () {
+        assert!(status == 3, ErrorCodes.InvalidStatus)
+        checkCaller!(callerAddress!() == arbiter, ErrorCodes.OnlyArbiter)
+
+        if (toFreelancer) {
+            let total = amount + collateral
+            transferTokenFromSelf!(freelancer, ALPH, total)
+            trustRegistry.increaseScore(freelancer, 2)
+        } else {
+            transferTokenFromSelf!(client, ALPH, amount)
+            transferTokenFromSelf!(freelancer, ALPH, collateral)
+            trustRegistry.decreaseScore(freelancer, 15)
+        }
+        status = 4
+
+        emit DisputeResolved(arbiter, toFreelancer)
+        destroySelf!(client)
+    }
+
+    // Le client annule avant que le freelancer accepte
+    @using(assetsInContract = true, updateFields = true)
+    pub fn cancelByClient() -> () {
+        assert!(status == 0, ErrorCodes.InvalidStatus)
+        checkCaller!(callerAddress!() == client, ErrorCodes.OnlyClient)
+
+        transferTokenFromSelf!(client, ALPH, amount)
+        status = 4
+
+        emit EscrowCancelled(client)
+        destroySelf!(client)
+    }
+
+    // Si le client ne répond pas après deadline + 48h, le freelancer récupère tout
+    @using(assetsInContract = true, updateFields = true, checkExternalCaller = false)
+    pub fn autoClaim() -> () {
+        assert!(status == 2, ErrorCodes.InvalidStatus)
+        assert!(blockTimeStamp!() > deadline + 172800000, ErrorCodes.AutoClaimTooEarly)
+
+        let total = amount + collateral
+        transferTokenFromSelf!(freelancer, ALPH, total)
+        status = 4
+
+        trustRegistry.increaseScore(freelancer, 5)
+
+        emit PaymentReleased(freelancer, total)
+        destroySelf!(client)
+    }
+
+    // Getters
+    pub fn getStatus() -> U256 {
+        return status
+    }
+
+    pub fn getDeliverableLink() -> ByteVec {
+        return deliverableLink
+    }
+
+    pub fn getCdcHash() -> ByteVec {
+        return cdcHash
+    }
+}
