@@ -164,6 +164,8 @@ Tokens testnet disponibles via le [Faucet](https://docs.alephium.org/infrastruct
 
 ## Documentation
 
+- [docs/FRONTEND_GUIDE.md](docs/FRONTEND_GUIDE.md) - **Guide frontend** : comment communiquer avec les contrats, exemples de code, pièges à éviter
+- [docs/CONTRACTS_API.md](docs/CONTRACTS_API.md) - Documentation de toutes les fonctions des contrats (params, checks, comportement)
 - [docs/PROJECT.md](docs/PROJECT.md) - Roadmap backend AlphTrust
 - [docs/ALEPHIUM-TECHNICAL-ONBOARDING.md](docs/ALEPHIUM-TECHNICAL-ONBOARDING.md) - Guide technique Alephium & Ralph
 - [Documentation officielle Alephium](https://docs.alephium.org/dapps/)
