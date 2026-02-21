@@ -1,0 +1,43 @@
+.wallet-addr {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 4px 10px;
+  background: var(--gray-50);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  position: relative;
+  transition: background var(--transition-fast);
+}
+.wallet-addr:hover {
+  background: var(--gray-100);
+}
+
+.wallet-addr-text {
+  color: var(--text-secondary);
+}
+
+.wallet-addr-icon {
+  color: var(--gray-400);
+  transition: color var(--transition-fast);
+}
+.wallet-addr-icon.copied {
+  color: var(--success);
+}
+
+.wallet-addr-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gray-800);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+}

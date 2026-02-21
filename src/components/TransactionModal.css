@@ -1,0 +1,12 @@
+.tx-modal {
+  max-width: 400px;
+}
+
+.tx-modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 0;
+  text-align: center;
+}

@@ -1,0 +1,82 @@
+.dispute-page {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.dispute-form h1 {
+  font-size: 24px;
+}
+
+.dispute-submitted, .arbiter-view {
+  max-width: 720px;
+}
+
+/* Dispute argument cards */
+.dispute-arguments {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dispute-arg-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.dispute-arg-header-full {
+  padding: 10px 16px;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--border);
+}
+
+.dispute-arg-role {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.dispute-arg-body {
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Arbiter */
+.arbiter-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px;
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+}
+
+.arbiter-summary-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.arbiter-decisions {
+  display: flex;
+  gap: 12px;
+}
+
+.step-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 28px;
+}
+
+@media (max-width: 640px) {
+  .arbiter-decisions {
+    flex-direction: column;
+  }
+  .arbiter-summary {
+    grid-template-columns: 1fr;
+  }
+}
