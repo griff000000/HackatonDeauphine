@@ -49,6 +49,9 @@ export namespace EscrowTypes {
     trustRegistry: HexString;
     deliverableLink: HexString;
     status: bigint;
+    disputeReason: HexString;
+    disputeEvidence: HexString;
+    disputeJustification: HexString;
   };
 
   export type State = ContractState<Fields>;
@@ -65,10 +68,18 @@ export namespace EscrowTypes {
     to: Address;
     totalAmount: bigint;
   }>;
-  export type DisputeOpenedEvent = ContractEvent<{ opener: Address }>;
+  export type DisputeOpenedEvent = ContractEvent<{
+    opener: Address;
+    reason: HexString;
+  }>;
+  export type EvidenceSubmittedEvent = ContractEvent<{
+    submitter: Address;
+    evidence: HexString;
+  }>;
   export type DisputeResolvedEvent = ContractEvent<{
     arbiter: Address;
     toFreelancer: boolean;
+    justification: HexString;
   }>;
   export type EscrowCancelledEvent = ContractEvent<{ client: Address }>;
   export type FreelancerRefundedEvent = ContractEvent<{ freelancer: Address }>;
@@ -87,11 +98,18 @@ export namespace EscrowTypes {
       result: CallContractResult<null>;
     };
     dispute: {
-      params: Omit<CallContractParams<{}>, "args">;
+      params: CallContractParams<{ reason: HexString }>;
+      result: CallContractResult<null>;
+    };
+    submitEvidence: {
+      params: CallContractParams<{ evidence: HexString }>;
       result: CallContractResult<null>;
     };
     resolve: {
-      params: CallContractParams<{ toFreelancer: boolean }>;
+      params: CallContractParams<{
+        toFreelancer: boolean;
+        justification: HexString;
+      }>;
       result: CallContractResult<null>;
     };
     refundByFreelancer: {
@@ -115,6 +133,18 @@ export namespace EscrowTypes {
       result: CallContractResult<HexString>;
     };
     getCdcHash: {
+      params: Omit<CallContractParams<{}>, "args">;
+      result: CallContractResult<HexString>;
+    };
+    getDisputeReason: {
+      params: Omit<CallContractParams<{}>, "args">;
+      result: CallContractResult<HexString>;
+    };
+    getDisputeEvidence: {
+      params: Omit<CallContractParams<{}>, "args">;
+      result: CallContractResult<HexString>;
+    };
+    getDisputeJustification: {
       params: Omit<CallContractParams<{}>, "args">;
       result: CallContractResult<HexString>;
     };
@@ -149,11 +179,18 @@ export namespace EscrowTypes {
       result: SignExecuteScriptTxResult;
     };
     dispute: {
-      params: Omit<SignExecuteContractMethodParams<{}>, "args">;
+      params: SignExecuteContractMethodParams<{ reason: HexString }>;
+      result: SignExecuteScriptTxResult;
+    };
+    submitEvidence: {
+      params: SignExecuteContractMethodParams<{ evidence: HexString }>;
       result: SignExecuteScriptTxResult;
     };
     resolve: {
-      params: SignExecuteContractMethodParams<{ toFreelancer: boolean }>;
+      params: SignExecuteContractMethodParams<{
+        toFreelancer: boolean;
+        justification: HexString;
+      }>;
       result: SignExecuteScriptTxResult;
     };
     refundByFreelancer: {
@@ -180,6 +217,18 @@ export namespace EscrowTypes {
       params: Omit<SignExecuteContractMethodParams<{}>, "args">;
       result: SignExecuteScriptTxResult;
     };
+    getDisputeReason: {
+      params: Omit<SignExecuteContractMethodParams<{}>, "args">;
+      result: SignExecuteScriptTxResult;
+    };
+    getDisputeEvidence: {
+      params: Omit<SignExecuteContractMethodParams<{}>, "args">;
+      result: SignExecuteScriptTxResult;
+    };
+    getDisputeJustification: {
+      params: Omit<SignExecuteContractMethodParams<{}>, "args">;
+      result: SignExecuteScriptTxResult;
+    };
   }
   export type SignExecuteMethodParams<T extends keyof SignExecuteMethodTable> =
     SignExecuteMethodTable[T]["params"];
@@ -201,9 +250,10 @@ class Factory extends ContractFactory<EscrowInstance, EscrowTypes.Fields> {
     WorkDelivered: 1,
     PaymentReleased: 2,
     DisputeOpened: 3,
-    DisputeResolved: 4,
-    EscrowCancelled: 5,
-    FreelancerRefunded: 6,
+    EvidenceSubmitted: 4,
+    DisputeResolved: 5,
+    EscrowCancelled: 6,
+    FreelancerRefunded: 7,
   };
   consts = {
     ErrorCodes: {
@@ -213,6 +263,7 @@ class Factory extends ContractFactory<EscrowInstance, EscrowTypes.Fields> {
       OnlyArbiter: BigInt("3"),
       OnlyClientOrFreelancer: BigInt("4"),
       AutoClaimTooEarly: BigInt("5"),
+      EvidenceAlreadySubmitted: BigInt("6"),
     },
   };
 
@@ -251,17 +302,25 @@ class Factory extends ContractFactory<EscrowInstance, EscrowTypes.Fields> {
       return testMethod(this, "release", params, getContractByCodeHash);
     },
     dispute: async (
-      params: Omit<
-        TestContractParamsWithoutMaps<EscrowTypes.Fields, never>,
-        "args"
+      params: TestContractParamsWithoutMaps<
+        EscrowTypes.Fields,
+        { reason: HexString }
       >
     ): Promise<TestContractResultWithoutMaps<null>> => {
       return testMethod(this, "dispute", params, getContractByCodeHash);
     },
+    submitEvidence: async (
+      params: TestContractParamsWithoutMaps<
+        EscrowTypes.Fields,
+        { evidence: HexString }
+      >
+    ): Promise<TestContractResultWithoutMaps<null>> => {
+      return testMethod(this, "submitEvidence", params, getContractByCodeHash);
+    },
     resolve: async (
       params: TestContractParamsWithoutMaps<
         EscrowTypes.Fields,
-        { toFreelancer: boolean }
+        { toFreelancer: boolean; justification: HexString }
       >
     ): Promise<TestContractResultWithoutMaps<null>> => {
       return testMethod(this, "resolve", params, getContractByCodeHash);
@@ -324,6 +383,45 @@ class Factory extends ContractFactory<EscrowInstance, EscrowTypes.Fields> {
     ): Promise<TestContractResultWithoutMaps<HexString>> => {
       return testMethod(this, "getCdcHash", params, getContractByCodeHash);
     },
+    getDisputeReason: async (
+      params: Omit<
+        TestContractParamsWithoutMaps<EscrowTypes.Fields, never>,
+        "args"
+      >
+    ): Promise<TestContractResultWithoutMaps<HexString>> => {
+      return testMethod(
+        this,
+        "getDisputeReason",
+        params,
+        getContractByCodeHash
+      );
+    },
+    getDisputeEvidence: async (
+      params: Omit<
+        TestContractParamsWithoutMaps<EscrowTypes.Fields, never>,
+        "args"
+      >
+    ): Promise<TestContractResultWithoutMaps<HexString>> => {
+      return testMethod(
+        this,
+        "getDisputeEvidence",
+        params,
+        getContractByCodeHash
+      );
+    },
+    getDisputeJustification: async (
+      params: Omit<
+        TestContractParamsWithoutMaps<EscrowTypes.Fields, never>,
+        "args"
+      >
+    ): Promise<TestContractResultWithoutMaps<HexString>> => {
+      return testMethod(
+        this,
+        "getDisputeJustification",
+        params,
+        getContractByCodeHash
+      );
+    },
   };
 
   stateForTest(
@@ -340,7 +438,7 @@ export const Escrow = new Factory(
   Contract.fromJson(
     EscrowContractJson,
     "",
-    "401412d777a6e6bbfc5e0c8f645b62697aea9552bebbc73524b32b0f12095f4f",
+    "d99ba2dd8bc4af3c87d8775f4fe4e0cf3897bd57ce3dd14e0552a991cec8d632",
     []
   )
 );
@@ -412,6 +510,19 @@ export class EscrowInstance extends ContractInstance {
     );
   }
 
+  subscribeEvidenceSubmittedEvent(
+    options: EventSubscribeOptions<EscrowTypes.EvidenceSubmittedEvent>,
+    fromCount?: number
+  ): EventSubscription {
+    return subscribeContractEvent(
+      Escrow.contract,
+      this,
+      options,
+      "EvidenceSubmitted",
+      fromCount
+    );
+  }
+
   subscribeDisputeResolvedEvent(
     options: EventSubscribeOptions<EscrowTypes.DisputeResolvedEvent>,
     fromCount?: number
@@ -457,6 +568,7 @@ export class EscrowInstance extends ContractInstance {
       | EscrowTypes.WorkDeliveredEvent
       | EscrowTypes.PaymentReleasedEvent
       | EscrowTypes.DisputeOpenedEvent
+      | EscrowTypes.EvidenceSubmittedEvent
       | EscrowTypes.DisputeResolvedEvent
       | EscrowTypes.EscrowCancelledEvent
       | EscrowTypes.FreelancerRefundedEvent
@@ -495,13 +607,18 @@ export class EscrowInstance extends ContractInstance {
       );
     },
     dispute: async (
-      params?: EscrowTypes.CallMethodParams<"dispute">
+      params: EscrowTypes.CallMethodParams<"dispute">
     ): Promise<EscrowTypes.CallMethodResult<"dispute">> => {
+      return callMethod(Escrow, this, "dispute", params, getContractByCodeHash);
+    },
+    submitEvidence: async (
+      params: EscrowTypes.CallMethodParams<"submitEvidence">
+    ): Promise<EscrowTypes.CallMethodResult<"submitEvidence">> => {
       return callMethod(
         Escrow,
         this,
-        "dispute",
-        params === undefined ? {} : params,
+        "submitEvidence",
+        params,
         getContractByCodeHash
       );
     },
@@ -576,6 +693,39 @@ export class EscrowInstance extends ContractInstance {
         getContractByCodeHash
       );
     },
+    getDisputeReason: async (
+      params?: EscrowTypes.CallMethodParams<"getDisputeReason">
+    ): Promise<EscrowTypes.CallMethodResult<"getDisputeReason">> => {
+      return callMethod(
+        Escrow,
+        this,
+        "getDisputeReason",
+        params === undefined ? {} : params,
+        getContractByCodeHash
+      );
+    },
+    getDisputeEvidence: async (
+      params?: EscrowTypes.CallMethodParams<"getDisputeEvidence">
+    ): Promise<EscrowTypes.CallMethodResult<"getDisputeEvidence">> => {
+      return callMethod(
+        Escrow,
+        this,
+        "getDisputeEvidence",
+        params === undefined ? {} : params,
+        getContractByCodeHash
+      );
+    },
+    getDisputeJustification: async (
+      params?: EscrowTypes.CallMethodParams<"getDisputeJustification">
+    ): Promise<EscrowTypes.CallMethodResult<"getDisputeJustification">> => {
+      return callMethod(
+        Escrow,
+        this,
+        "getDisputeJustification",
+        params === undefined ? {} : params,
+        getContractByCodeHash
+      );
+    },
   };
 
   transact = {
@@ -598,6 +748,11 @@ export class EscrowInstance extends ContractInstance {
       params: EscrowTypes.SignExecuteMethodParams<"dispute">
     ): Promise<EscrowTypes.SignExecuteMethodResult<"dispute">> => {
       return signExecuteMethod(Escrow, this, "dispute", params);
+    },
+    submitEvidence: async (
+      params: EscrowTypes.SignExecuteMethodParams<"submitEvidence">
+    ): Promise<EscrowTypes.SignExecuteMethodResult<"submitEvidence">> => {
+      return signExecuteMethod(Escrow, this, "submitEvidence", params);
     },
     resolve: async (
       params: EscrowTypes.SignExecuteMethodParams<"resolve">
@@ -633,6 +788,23 @@ export class EscrowInstance extends ContractInstance {
       params: EscrowTypes.SignExecuteMethodParams<"getCdcHash">
     ): Promise<EscrowTypes.SignExecuteMethodResult<"getCdcHash">> => {
       return signExecuteMethod(Escrow, this, "getCdcHash", params);
+    },
+    getDisputeReason: async (
+      params: EscrowTypes.SignExecuteMethodParams<"getDisputeReason">
+    ): Promise<EscrowTypes.SignExecuteMethodResult<"getDisputeReason">> => {
+      return signExecuteMethod(Escrow, this, "getDisputeReason", params);
+    },
+    getDisputeEvidence: async (
+      params: EscrowTypes.SignExecuteMethodParams<"getDisputeEvidence">
+    ): Promise<EscrowTypes.SignExecuteMethodResult<"getDisputeEvidence">> => {
+      return signExecuteMethod(Escrow, this, "getDisputeEvidence", params);
+    },
+    getDisputeJustification: async (
+      params: EscrowTypes.SignExecuteMethodParams<"getDisputeJustification">
+    ): Promise<
+      EscrowTypes.SignExecuteMethodResult<"getDisputeJustification">
+    > => {
+      return signExecuteMethod(Escrow, this, "getDisputeJustification", params);
     },
   };
 

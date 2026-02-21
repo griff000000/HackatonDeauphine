@@ -1,17 +1,20 @@
 {
   "version": "v4.3.0",
   "name": "ResolveDispute",
-  "bytecodeTemplate": "01010300000005{1}0d0c{0}0104",
+  "bytecodeTemplate": "01010300000006{1}{2}0e0c{0}0105",
   "fieldsSig": {
     "names": [
       "escrow",
-      "toFreelancer"
+      "toFreelancer",
+      "justification"
     ],
     "types": [
       "Escrow",
-      "Bool"
+      "Bool",
+      "ByteVec"
     ],
     "isMutable": [
+      false,
       false,
       false
     ]

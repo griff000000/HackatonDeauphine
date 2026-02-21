@@ -16,6 +16,7 @@ describe('Escrow contract', () => {
   const testAmount = 10n * ONE_ALPH
   const testCollateral = 5n * ONE_ALPH
   const testDeadline = BigInt(Date.now()) + 86400000n // +24h
+  const emptyHex = Buffer.from('', 'utf8').toString('hex')
 
   function getBaseFields(): EscrowTypes.Fields {
     return {
@@ -27,8 +28,11 @@ describe('Escrow contract', () => {
       deadline: testDeadline,
       cdcHash: Buffer.from('QmTestHash', 'utf8').toString('hex'),
       trustRegistry: registryContractId,
-      deliverableLink: Buffer.from('', 'utf8').toString('hex'),
-      status: 0n
+      deliverableLink: emptyHex,
+      status: 0n,
+      disputeReason: emptyHex,
+      disputeEvidence: emptyHex,
+      disputeJustification: emptyHex
     }
   }
 
@@ -178,32 +182,38 @@ describe('Escrow contract', () => {
 
   // ==================== dispute ====================
 
-  it('dispute: client opens dispute, status becomes 3', async () => {
+  it('dispute: client opens dispute with reason, status becomes 3', async () => {
     const fields = { ...getBaseFields(), status: 2n }
+    const reason = Buffer.from('Le livrable ne correspond pas au CDC', 'utf8').toString('hex')
 
     const testResult = await Escrow.tests.dispute({
       contractAddress: escrowAddress,
       initialAsset: { alphAmount: testAmount + testCollateral + ONE_ALPH },
       initialFields: fields,
+      args: { reason },
       inputAssets: [{ address: clientAddress, asset: { alphAmount: ONE_ALPH } }],
       existingContracts: [TrustRegistry.stateForTest({}, { alphAmount: ONE_ALPH }, registryAddress)]
     })
 
     const contractState = testResult.contracts.find(c => c.address === escrowAddress) as EscrowTypes.State
     expect(contractState.fields.status).toEqual(3n)
+    expect(contractState.fields.disputeReason).toEqual(reason)
 
     const event = testResult.events[0] as EscrowTypes.DisputeOpenedEvent
     expect(event.name).toEqual('DisputeOpened')
     expect(event.fields.opener).toEqual(clientAddress)
+    expect(event.fields.reason).toEqual(reason)
   })
 
   it('dispute: freelancer can also open dispute', async () => {
     const fields = { ...getBaseFields(), status: 1n }
+    const reason = Buffer.from('Le client ne repond plus', 'utf8').toString('hex')
 
     const testResult = await Escrow.tests.dispute({
       contractAddress: escrowAddress,
       initialAsset: { alphAmount: testAmount + testCollateral + ONE_ALPH },
       initialFields: fields,
+      args: { reason },
       inputAssets: [{ address: freelancerAddress, asset: { alphAmount: ONE_ALPH } }],
       existingContracts: [TrustRegistry.stateForTest({}, { alphAmount: ONE_ALPH }, registryAddress)]
     })
@@ -214,12 +224,14 @@ describe('Escrow contract', () => {
 
   it('dispute: fails if arbiter tries to dispute', async () => {
     const fields = { ...getBaseFields(), status: 2n }
+    const reason = Buffer.from('test', 'utf8').toString('hex')
 
     await expectAssertionError(
       Escrow.tests.dispute({
         contractAddress: escrowAddress,
         initialAsset: { alphAmount: testAmount + testCollateral + ONE_ALPH },
         initialFields: fields,
+        args: { reason },
         inputAssets: [{ address: arbiterAddress, asset: { alphAmount: ONE_ALPH } }],
         existingContracts: [TrustRegistry.stateForTest({}, { alphAmount: ONE_ALPH }, registryAddress)]
       }),
@@ -228,17 +240,82 @@ describe('Escrow contract', () => {
     )
   })
 
+  // ==================== submitEvidence ====================
+
+  it('submitEvidence: other party submits evidence during dispute', async () => {
+    const fields = { ...getBaseFields(), status: 3n }
+    const evidence = Buffer.from('https://drive.google.com/proof.pdf', 'utf8').toString('hex')
+
+    const testResult = await Escrow.tests.submitEvidence({
+      contractAddress: escrowAddress,
+      initialAsset: { alphAmount: testAmount + testCollateral + ONE_ALPH },
+      initialFields: fields,
+      args: { evidence },
+      inputAssets: [{ address: freelancerAddress, asset: { alphAmount: ONE_ALPH } }],
+      existingContracts: [TrustRegistry.stateForTest({}, { alphAmount: ONE_ALPH }, registryAddress)]
+    })
+
+    const contractState = testResult.contracts.find(c => c.address === escrowAddress) as EscrowTypes.State
+    expect(contractState.fields.disputeEvidence).toEqual(evidence)
+
+    const event = testResult.events[0] as EscrowTypes.EvidenceSubmittedEvent
+    expect(event.name).toEqual('EvidenceSubmitted')
+    expect(event.fields.submitter).toEqual(freelancerAddress)
+    expect(event.fields.evidence).toEqual(evidence)
+  })
+
+  it('submitEvidence: fails if evidence already submitted', async () => {
+    const fields = {
+      ...getBaseFields(),
+      status: 3n,
+      disputeEvidence: Buffer.from('already submitted', 'utf8').toString('hex')
+    }
+    const evidence = Buffer.from('new evidence', 'utf8').toString('hex')
+
+    await expectAssertionError(
+      Escrow.tests.submitEvidence({
+        contractAddress: escrowAddress,
+        initialAsset: { alphAmount: testAmount + testCollateral + ONE_ALPH },
+        initialFields: fields,
+        args: { evidence },
+        inputAssets: [{ address: clientAddress, asset: { alphAmount: ONE_ALPH } }],
+        existingContracts: [TrustRegistry.stateForTest({}, { alphAmount: ONE_ALPH }, registryAddress)]
+      }),
+      escrowAddress,
+      Escrow.consts.ErrorCodes.EvidenceAlreadySubmitted
+    )
+  })
+
+  it('submitEvidence: fails if not in dispute status', async () => {
+    const fields = { ...getBaseFields(), status: 2n }
+    const evidence = Buffer.from('evidence', 'utf8').toString('hex')
+
+    await expectAssertionError(
+      Escrow.tests.submitEvidence({
+        contractAddress: escrowAddress,
+        initialAsset: { alphAmount: testAmount + testCollateral + ONE_ALPH },
+        initialFields: fields,
+        args: { evidence },
+        inputAssets: [{ address: clientAddress, asset: { alphAmount: ONE_ALPH } }],
+        existingContracts: [TrustRegistry.stateForTest({}, { alphAmount: ONE_ALPH }, registryAddress)]
+      }),
+      escrowAddress,
+      Escrow.consts.ErrorCodes.InvalidStatus
+    )
+  })
+
   // ==================== resolve ====================
 
-  it('resolve(true): arbiter rules for freelancer', async () => {
+  it('resolve(true): arbiter rules for freelancer with justification', async () => {
     const fields = { ...getBaseFields(), status: 3n }
     const totalInContract = testAmount + testCollateral
+    const justification = Buffer.from('Le livrable correspond au CDC', 'utf8').toString('hex')
 
     const testResult = await Escrow.tests.resolve({
       contractAddress: escrowAddress,
       initialAsset: { alphAmount: totalInContract + ONE_ALPH },
       initialFields: fields,
-      args: { toFreelancer: true },
+      args: { toFreelancer: true, justification },
       inputAssets: [{ address: arbiterAddress, asset: { alphAmount: ONE_ALPH } }],
       existingContracts: [TrustRegistry.stateForTest({}, { alphAmount: ONE_ALPH }, registryAddress)]
     })
@@ -250,17 +327,19 @@ describe('Escrow contract', () => {
     // Check event
     const event = testResult.events.find(e => e.name === 'DisputeResolved') as EscrowTypes.DisputeResolvedEvent
     expect(event.fields.toFreelancer).toBe(true)
+    expect(event.fields.justification).toEqual(justification)
   })
 
-  it('resolve(false): arbiter rules for client', async () => {
+  it('resolve(false): arbiter rules for client with justification', async () => {
     const fields = { ...getBaseFields(), status: 3n }
     const totalInContract = testAmount + testCollateral
+    const justification = Buffer.from('Travail non conforme', 'utf8').toString('hex')
 
     const testResult = await Escrow.tests.resolve({
       contractAddress: escrowAddress,
       initialAsset: { alphAmount: totalInContract + ONE_ALPH },
       initialFields: fields,
-      args: { toFreelancer: false },
+      args: { toFreelancer: false, justification },
       inputAssets: [{ address: arbiterAddress, asset: { alphAmount: ONE_ALPH } }],
       existingContracts: [TrustRegistry.stateForTest({}, { alphAmount: ONE_ALPH }, registryAddress)]
     })
@@ -270,17 +349,19 @@ describe('Escrow contract', () => {
 
     const event = testResult.events.find(e => e.name === 'DisputeResolved') as EscrowTypes.DisputeResolvedEvent
     expect(event.fields.toFreelancer).toBe(false)
+    expect(event.fields.justification).toEqual(justification)
   })
 
   it('resolve: fails if not arbiter', async () => {
     const fields = { ...getBaseFields(), status: 3n }
+    const justification = Buffer.from('test', 'utf8').toString('hex')
 
     await expectAssertionError(
       Escrow.tests.resolve({
         contractAddress: escrowAddress,
         initialAsset: { alphAmount: testAmount + testCollateral + ONE_ALPH },
         initialFields: fields,
-        args: { toFreelancer: true },
+        args: { toFreelancer: true, justification },
         inputAssets: [{ address: clientAddress, asset: { alphAmount: ONE_ALPH } }],
         existingContracts: [TrustRegistry.stateForTest({}, { alphAmount: ONE_ALPH }, registryAddress)]
       }),

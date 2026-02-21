@@ -20,6 +20,7 @@ import { default as OpenDisputeScriptJson } from "../OpenDispute.ral.json";
 import { default as RefundByFreelancerScriptJson } from "../RefundByFreelancer.ral.json";
 import { default as ReleasePaymentScriptJson } from "../ReleasePayment.ral.json";
 import { default as ResolveDisputeScriptJson } from "../ResolveDispute.ral.json";
+import { default as SubmitEvidenceScriptJson } from "../SubmitEvidence.ral.json";
 
 export const AcceptAndDeposit = new ExecutableScript<{
   escrow: HexString;
@@ -41,10 +42,10 @@ export const Deliver = new ExecutableScript<{
   link: HexString;
 }>(Script.fromJson(DeliverScriptJson, "", []), getContractByCodeHash);
 
-export const OpenDispute = new ExecutableScript<{ escrow: HexString }>(
-  Script.fromJson(OpenDisputeScriptJson, "", []),
-  getContractByCodeHash
-);
+export const OpenDispute = new ExecutableScript<{
+  escrow: HexString;
+  reason: HexString;
+}>(Script.fromJson(OpenDisputeScriptJson, "", []), getContractByCodeHash);
 
 export const RefundByFreelancer = new ExecutableScript<{ escrow: HexString }>(
   Script.fromJson(RefundByFreelancerScriptJson, "", []),
@@ -59,4 +60,10 @@ export const ReleasePayment = new ExecutableScript<{ escrow: HexString }>(
 export const ResolveDispute = new ExecutableScript<{
   escrow: HexString;
   toFreelancer: boolean;
+  justification: HexString;
 }>(Script.fromJson(ResolveDisputeScriptJson, "", []), getContractByCodeHash);
+
+export const SubmitEvidence = new ExecutableScript<{
+  escrow: HexString;
+  evidence: HexString;
+}>(Script.fromJson(SubmitEvidenceScriptJson, "", []), getContractByCodeHash);

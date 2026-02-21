@@ -8,14 +8,18 @@ Contract Escrow(
     cdcHash: ByteVec,
     trustRegistry: TrustRegistry,
     mut deliverableLink: ByteVec,
-    mut status: U256
+    mut status: U256,
+    mut disputeReason: ByteVec,
+    mut disputeEvidence: ByteVec,
+    mut disputeJustification: ByteVec
 ) {
 
     event FreelancerAccepted(freelancer: Address, collateral: U256)
     event WorkDelivered(freelancer: Address, link: ByteVec)
     event PaymentReleased(to: Address, totalAmount: U256)
-    event DisputeOpened(opener: Address)
-    event DisputeResolved(arbiter: Address, toFreelancer: Bool)
+    event DisputeOpened(opener: Address, reason: ByteVec)
+    event EvidenceSubmitted(submitter: Address, evidence: ByteVec)
+    event DisputeResolved(arbiter: Address, toFreelancer: Bool, justification: ByteVec)
     event EscrowCancelled(client: Address)
     event FreelancerRefunded(freelancer: Address)
 
@@ -26,6 +30,7 @@ Contract Escrow(
         OnlyArbiter = 3
         OnlyClientOrFreelancer = 4
         AutoClaimTooEarly = 5
+        EvidenceAlreadySubmitted = 6
     }
 
     // Freelancer deposite sa caution et active l'escrow
@@ -68,23 +73,39 @@ Contract Escrow(
         destroySelf!(client)
     }
 
-    // Client ou freelancer ouvre un litige
+    // Client ou freelancer ouvre un litige avec justification
     @using(updateFields = true)
-    pub fn dispute() -> () {
+    pub fn dispute(reason: ByteVec) -> () {
         assert!(status == 1 || status == 2, ErrorCodes.InvalidStatus)
         let caller = callerAddress!()
         checkCaller!(caller == client || caller == freelancer, ErrorCodes.OnlyClientOrFreelancer)
 
+        disputeReason = reason
         status = 3
 
-        emit DisputeOpened(caller)
+        emit DisputeOpened(caller, reason)
     }
 
-    // L'arbitre tranche le litige
+    // L'autre partie soumet sa preuve / version des faits
+    @using(updateFields = true)
+    pub fn submitEvidence(evidence: ByteVec) -> () {
+        assert!(status == 3, ErrorCodes.InvalidStatus)
+        let caller = callerAddress!()
+        checkCaller!(caller == client || caller == freelancer, ErrorCodes.OnlyClientOrFreelancer)
+        assert!(size!(disputeEvidence) == 0, ErrorCodes.EvidenceAlreadySubmitted)
+
+        disputeEvidence = evidence
+
+        emit EvidenceSubmitted(caller, evidence)
+    }
+
+    // L'arbitre tranche le litige avec justification
     @using(assetsInContract = true, updateFields = true)
-    pub fn resolve(toFreelancer: Bool) -> () {
+    pub fn resolve(toFreelancer: Bool, justification: ByteVec) -> () {
         assert!(status == 3, ErrorCodes.InvalidStatus)
         checkCaller!(callerAddress!() == arbiter, ErrorCodes.OnlyArbiter)
+
+        disputeJustification = justification
 
         if (toFreelancer) {
             let total = amount + collateral
@@ -97,7 +118,7 @@ Contract Escrow(
         }
         status = 4
 
-        emit DisputeResolved(arbiter, toFreelancer)
+        emit DisputeResolved(arbiter, toFreelancer, justification)
         destroySelf!(client)
     }
 
@@ -157,5 +178,17 @@ Contract Escrow(
 
     pub fn getCdcHash() -> ByteVec {
         return cdcHash
+    }
+
+    pub fn getDisputeReason() -> ByteVec {
+        return disputeReason
+    }
+
+    pub fn getDisputeEvidence() -> ByteVec {
+        return disputeEvidence
+    }
+
+    pub fn getDisputeJustification() -> ByteVec {
+        return disputeJustification
     }
 }

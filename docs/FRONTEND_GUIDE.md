@@ -138,6 +138,7 @@ import {
   Deliver,
   ReleasePayment,
   OpenDispute,
+  SubmitEvidence,
   ResolveDispute,
   RefundByFreelancer,
   CancelEscrow,
@@ -166,7 +167,10 @@ const createEscrow = async () => {
       cdcHash: stringToHex('QmIpfsHashDuCdc'),
       trustRegistry: 'contractIdDuTrustRegistry',  // hex
       deliverableLink: stringToHex(''),
-      status: 0n
+      status: 0n,
+      disputeReason: stringToHex(''),
+      disputeEvidence: stringToHex(''),
+      disputeJustification: stringToHex('')
     },
     initialAttoAlphAmount: 10n * ONE_ALPH + ONE_ALPH  // amount + deposit contrat
   })
@@ -222,28 +226,48 @@ const releasePayment = async (escrowContractId: string) => {
 }
 ```
 
-#### Ouvrir un litige
+#### Ouvrir un litige (avec justification)
 
 ```tsx
-const openDispute = async (escrowContractId: string) => {
+const openDispute = async (escrowContractId: string, reason: string) => {
   const result = await OpenDispute.execute({
     signer,
-    initialFields: { escrow: escrowContractId },
+    initialFields: {
+      escrow: escrowContractId,
+      reason: stringToHex(reason)
+    },
     attoAlphAmount: DUST_AMOUNT
   })
   return result.txId
 }
 ```
 
-#### Arbitre résout le litige
+#### Soumettre une preuve (réponse de l'autre partie)
 
 ```tsx
-const resolveDispute = async (escrowContractId: string, toFreelancer: boolean) => {
+const submitEvidence = async (escrowContractId: string, evidence: string) => {
+  const result = await SubmitEvidence.execute({
+    signer,
+    initialFields: {
+      escrow: escrowContractId,
+      evidence: stringToHex(evidence)
+    },
+    attoAlphAmount: DUST_AMOUNT
+  })
+  return result.txId
+}
+```
+
+#### Arbitre résout le litige (avec justification)
+
+```tsx
+const resolveDispute = async (escrowContractId: string, toFreelancer: boolean, justification: string) => {
   const result = await ResolveDispute.execute({
     signer,
     initialFields: {
       escrow: escrowContractId,
-      toFreelancer
+      toFreelancer,
+      justification: stringToHex(justification)
     },
     attoAlphAmount: DUST_AMOUNT
   })
@@ -305,6 +329,9 @@ console.log(state.fields.status)          // 0n, 1n, 2n, 3n, ou 4n
 console.log(state.fields.amount)          // bigint en attoALPH
 console.log(state.fields.freelancer)      // adresse
 console.log(state.fields.deliverableLink) // hex → décoder avec hexToString()
+console.log(state.fields.disputeReason)   // raison du litige (hex)
+console.log(state.fields.disputeEvidence) // preuve soumise (hex)
+console.log(state.fields.disputeJustification) // décision de l'arbitre (hex)
 
 // Appeler un getter spécifique
 const status = await escrowInstance.view.getStatus()
@@ -412,8 +439,9 @@ Le mieux : appeler `initScore` au moment ou le freelancer **accepte sa premiere 
                                  puis AcceptAndDeposit.execute(...)
 3. Freelancer livre         →  Deliver.execute(...)
 4a. Client valide           →  ReleasePayment.execute(...)     → Fini, score +5
-4b. Client conteste         →  OpenDispute.execute(...)
-    Arbitre tranche         →  ResolveDispute.execute(...)     → Fini
+4b. Client conteste         →  OpenDispute.execute(reason)
+    Freelancer répond       →  SubmitEvidence.execute(evidence)
+    Arbitre tranche         →  ResolveDispute.execute(justification) → Fini
 4c. Freelancer abandonne    →  RefundByFreelancer.execute(...) → Fini, score -3
 4d. Client ne répond pas    →  ClaimAfterDeadline.execute(...) → Fini, score +5
 4e. Client annule (avant 2) →  CancelEscrow.execute(...)      → Fini

@@ -26,7 +26,10 @@ const deployEscrow: DeployFunction<Settings> = async (
       cdcHash: stringToHex('QmTestCdcHash'),
       trustRegistry: trustRegistry.contractInstance.contractId,
       deliverableLink: stringToHex(''),
-      status: 0n
+      status: 0n,
+      disputeReason: stringToHex(''),
+      disputeEvidence: stringToHex(''),
+      disputeJustification: stringToHex('')
     },
     initialAttoAlphAmount: testAmount + ONE_ALPH // amount + contract deposit
   })

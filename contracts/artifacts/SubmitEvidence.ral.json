@@ -1,15 +1,18 @@
 {
   "version": "v4.3.0",
-  "name": "RefundByFreelancer",
-  "bytecodeTemplate": "010103000000040c0c{0}0106",
+  "name": "SubmitEvidence",
+  "bytecodeTemplate": "01010300000005{1}0d0c{0}0104",
   "fieldsSig": {
     "names": [
-      "escrow"
+      "escrow",
+      "evidence"
     ],
     "types": [
-      "Escrow"
+      "Escrow",
+      "ByteVec"
     ],
     "isMutable": [
+      false,
       false
     ]
   },

@@ -42,19 +42,19 @@ Contrat persistant qui stocke le score de confiance des freelancers (0-100, déf
 
 - **Qui peut appeler** : n'importe qui (`checkExternalCaller = false`)
 - **Checks** : aucun (en pratique, appelé uniquement par le contrat Escrow)
-- **Comportement** : Augmente le score de `amount`. **Cap à 100** — si `score + amount > 100`, met à 100. Emet `ScoreUpdated`.
+- **Comportement** : Augmente le score de `amount`. **Cap à 100** — si `score + amount > 100`, met à 100. Emet `ScoreUpdated`. No-op si le score n'est pas initialisé.
 
 ### `decreaseScore(freelancer: Address, amount: U256) → ()`
 
 - **Qui peut appeler** : n'importe qui (`checkExternalCaller = false`)
 - **Checks** : aucun (en pratique, appelé uniquement par le contrat Escrow)
-- **Comportement** : Diminue le score de `amount`. **Floor à 0** — si `score < amount`, met à 0. Emet `ScoreUpdated`.
+- **Comportement** : Diminue le score de `amount`. **Floor à 0** — si `score < amount`, met à 0. Emet `ScoreUpdated`. No-op si le score n'est pas initialisé.
 
 ---
 
 ## Escrow — Contrat de Mission
 
-Contrat créé par le client pour chaque mission. Contient les fonds bloqués.
+Contrat créé par le client pour chaque mission. Contient les fonds bloqués et l'historique complet du litige on-chain.
 
 ### Champs de déploiement
 
@@ -70,6 +70,9 @@ Contrat créé par le client pour chaque mission. Contient les fonds bloqués.
 | `trustRegistry` | TrustRegistry | Référence au contrat TrustRegistry |
 | `deliverableLink` | ByteVec (mut) | Lien vers le livrable (vide au départ) |
 | `status` | U256 (mut) | 0=Created, 1=Active, 2=Delivered, 3=Dispute, 4=Done |
+| `disputeReason` | ByteVec (mut) | Raison du litige soumise par l'initiateur |
+| `disputeEvidence` | ByteVec (mut) | Preuve/réponse soumise par l'autre partie |
+| `disputeJustification` | ByteVec (mut) | Justification de la décision de l'arbitre |
 
 ### Codes d'erreur
 
@@ -81,6 +84,7 @@ Contrat créé par le client pour chaque mission. Contient les fonds bloqués.
 | 3 | `OnlyArbiter` | Seul l'arbitre peut appeler cette fonction |
 | 4 | `OnlyClientOrFreelancer` | Seul le client ou le freelancer peut appeler |
 | 5 | `AutoClaimTooEarly` | La deadline + 48h n'est pas encore passée |
+| 6 | `EvidenceAlreadySubmitted` | Une preuve a déjà été soumise pour ce litige |
 
 ---
 
@@ -111,26 +115,37 @@ Contrat créé par le client pour chaque mission. Contient les fonds bloqués.
 - **Comportement** : Envoie `amount + collateral` au freelancer. Score **+5**. Status passe à **4 (Done)**. Le contrat se **détruit** et rembourse le storage au client. Emet `PaymentReleased`.
 - **TxScript** : `ReleasePayment(escrow)`
 
-### `dispute() → ()`
+### `dispute(reason: ByteVec) → ()`
 
 - **Qui peut appeler** : **client ou freelancer**
 - **Checks** :
   - `status == 1 || status == 2` (Active ou Delivered) sinon `InvalidStatus`
   - `callerAddress == client || callerAddress == freelancer` sinon `OnlyClientOrFreelancer`
-- **Comportement** : Ouvre un litige. Status passe à **3 (Dispute)**. Emet `DisputeOpened`.
-- **TxScript** : `OpenDispute(escrow)`
+- **Comportement** : Ouvre un litige avec une **justification** stockée on-chain. Status passe à **3 (Dispute)**. Emet `DisputeOpened`.
+- **TxScript** : `OpenDispute(escrow, reason)`
 
-### `resolve(toFreelancer: Bool) → ()`
+### `submitEvidence(evidence: ByteVec) → ()`
+
+- **Qui peut appeler** : **client ou freelancer**
+- **Checks** :
+  - `status == 3` (Dispute) sinon `InvalidStatus`
+  - `callerAddress == client || callerAddress == freelancer` sinon `OnlyClientOrFreelancer`
+  - `disputeEvidence` doit être vide sinon `EvidenceAlreadySubmitted`
+- **Comportement** : L'autre partie soumet sa **preuve / version des faits** on-chain. Une seule soumission autorisée par litige. Emet `EvidenceSubmitted`.
+- **TxScript** : `SubmitEvidence(escrow, evidence)`
+
+### `resolve(toFreelancer: Bool, justification: ByteVec) → ()`
 
 - **Qui peut appeler** : **arbitre uniquement**
 - **Checks** :
   - `status == 3` (Dispute) sinon `InvalidStatus`
   - `callerAddress == arbiter` sinon `OnlyArbiter`
 - **Comportement** :
+  - L'arbitre stocke sa **justification** on-chain
   - Si `toFreelancer == true` : envoie `amount + collateral` au freelancer, score **+2**
   - Si `toFreelancer == false` : rembourse `amount` au client + `collateral` au freelancer, score **-15**
   - Status passe à **4 (Done)**. Le contrat se **détruit**. Emet `DisputeResolved`.
-- **TxScript** : `ResolveDispute(escrow, toFreelancer)`
+- **TxScript** : `ResolveDispute(escrow, toFreelancer, justification)`
 
 ### `refundByFreelancer() → ()`
 
@@ -168,6 +183,9 @@ Contrat créé par le client pour chaque mission. Contient les fonds bloqués.
 | `getStatus()` | U256 | Status actuel (0-4) |
 | `getDeliverableLink()` | ByteVec | Lien du livrable soumis |
 | `getCdcHash()` | ByteVec | Hash du cahier des charges |
+| `getDisputeReason()` | ByteVec | Raison du litige |
+| `getDisputeEvidence()` | ByteVec | Preuve soumise par l'autre partie |
+| `getDisputeJustification()` | ByteVec | Justification de l'arbitre |
 
 ---
 
@@ -186,10 +204,30 @@ Contrat créé par le client pour chaque mission. Contient les fonds bloqués.
 | `FreelancerAccepted` | `freelancer: Address, collateral: U256` | `acceptAndDeposit` |
 | `WorkDelivered` | `freelancer: Address, link: ByteVec` | `deliver` |
 | `PaymentReleased` | `to: Address, totalAmount: U256` | `release`, `autoClaim` |
-| `DisputeOpened` | `opener: Address` | `dispute` |
-| `DisputeResolved` | `arbiter: Address, toFreelancer: Bool` | `resolve` |
+| `DisputeOpened` | `opener: Address, reason: ByteVec` | `dispute` |
+| `EvidenceSubmitted` | `submitter: Address, evidence: ByteVec` | `submitEvidence` |
+| `DisputeResolved` | `arbiter: Address, toFreelancer: Bool, justification: ByteVec` | `resolve` |
 | `FreelancerRefunded` | `freelancer: Address` | `refundByFreelancer` |
 | `EscrowCancelled` | `client: Address` | `cancelByClient` |
+
+---
+
+## Flow de dispute
+
+```
+1. Client/Freelancer ouvre le litige
+   → dispute(reason) → stocke la raison on-chain
+
+2. L'autre partie répond
+   → submitEvidence(evidence) → stocke sa version on-chain
+
+3. L'arbitre consulte : reason + evidence + deliverableLink + cdcHash
+
+4. L'arbitre tranche
+   → resolve(toFreelancer, justification) → stocke sa décision on-chain
+```
+
+Tout est transparent et vérifiable. Personne ne peut modifier les preuves après coup.
 
 ---
 
@@ -199,8 +237,8 @@ Contrat créé par le client pour chaque mission. Contient les fonds bloqués.
 0 Created  ──→  1 Active  ──→  2 Delivered  ──→  4 Done (release/autoClaim)
     │                │  │            │
     │                │  │            └───→ 3 Dispute
-    │                │  │                      │
-    │                │  │                      └──→ 4 Done (resolve)
+    │                │  │                   │ submitEvidence
+    │                │  │                   └──→ 4 Done (resolve)
     │                │  │
     │                │  └──→ 4 Done (refundByFreelancer)
     │                │

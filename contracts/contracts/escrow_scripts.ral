@@ -10,12 +10,16 @@ TxScript ReleasePayment(escrow: Escrow) {
     escrow.release()
 }
 
-TxScript OpenDispute(escrow: Escrow) {
-    escrow.dispute()
+TxScript OpenDispute(escrow: Escrow, reason: ByteVec) {
+    escrow.dispute(reason)
 }
 
-TxScript ResolveDispute(escrow: Escrow, toFreelancer: Bool) {
-    escrow.resolve(toFreelancer)
+TxScript SubmitEvidence(escrow: Escrow, evidence: ByteVec) {
+    escrow.submitEvidence(evidence)
+}
+
+TxScript ResolveDispute(escrow: Escrow, toFreelancer: Bool, justification: ByteVec) {
+    escrow.resolve(toFreelancer, justification)
 }
 
 TxScript RefundByFreelancer(escrow: Escrow) {
