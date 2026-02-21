@@ -18,6 +18,10 @@ TxScript ResolveDispute(escrow: Escrow, toFreelancer: Bool) {
     escrow.resolve(toFreelancer)
 }
 
+TxScript RefundByFreelancer(escrow: Escrow) {
+    escrow.refundByFreelancer()
+}
+
 TxScript CancelEscrow(escrow: Escrow) {
     escrow.cancelByClient()
 }

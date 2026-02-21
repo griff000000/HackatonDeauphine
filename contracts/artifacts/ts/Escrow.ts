@@ -71,6 +71,7 @@ export namespace EscrowTypes {
     toFreelancer: boolean;
   }>;
   export type EscrowCancelledEvent = ContractEvent<{ client: Address }>;
+  export type FreelancerRefundedEvent = ContractEvent<{ freelancer: Address }>;
 
   export interface CallMethodTable {
     acceptAndDeposit: {
@@ -91,6 +92,10 @@ export namespace EscrowTypes {
     };
     resolve: {
       params: CallContractParams<{ toFreelancer: boolean }>;
+      result: CallContractResult<null>;
+    };
+    refundByFreelancer: {
+      params: Omit<CallContractParams<{}>, "args">;
       result: CallContractResult<null>;
     };
     cancelByClient: {
@@ -151,6 +156,10 @@ export namespace EscrowTypes {
       params: SignExecuteContractMethodParams<{ toFreelancer: boolean }>;
       result: SignExecuteScriptTxResult;
     };
+    refundByFreelancer: {
+      params: Omit<SignExecuteContractMethodParams<{}>, "args">;
+      result: SignExecuteScriptTxResult;
+    };
     cancelByClient: {
       params: Omit<SignExecuteContractMethodParams<{}>, "args">;
       result: SignExecuteScriptTxResult;
@@ -194,6 +203,7 @@ class Factory extends ContractFactory<EscrowInstance, EscrowTypes.Fields> {
     DisputeOpened: 3,
     DisputeResolved: 4,
     EscrowCancelled: 5,
+    FreelancerRefunded: 6,
   };
   consts = {
     ErrorCodes: {
@@ -256,6 +266,19 @@ class Factory extends ContractFactory<EscrowInstance, EscrowTypes.Fields> {
     ): Promise<TestContractResultWithoutMaps<null>> => {
       return testMethod(this, "resolve", params, getContractByCodeHash);
     },
+    refundByFreelancer: async (
+      params: Omit<
+        TestContractParamsWithoutMaps<EscrowTypes.Fields, never>,
+        "args"
+      >
+    ): Promise<TestContractResultWithoutMaps<null>> => {
+      return testMethod(
+        this,
+        "refundByFreelancer",
+        params,
+        getContractByCodeHash
+      );
+    },
     cancelByClient: async (
       params: Omit<
         TestContractParamsWithoutMaps<EscrowTypes.Fields, never>,
@@ -317,7 +340,7 @@ export const Escrow = new Factory(
   Contract.fromJson(
     EscrowContractJson,
     "",
-    "eff62d0d8d717d21deabb92da63bbe28390e1da74637a92889738e74e000fbf4",
+    "401412d777a6e6bbfc5e0c8f645b62697aea9552bebbc73524b32b0f12095f4f",
     []
   )
 );
@@ -415,6 +438,19 @@ export class EscrowInstance extends ContractInstance {
     );
   }
 
+  subscribeFreelancerRefundedEvent(
+    options: EventSubscribeOptions<EscrowTypes.FreelancerRefundedEvent>,
+    fromCount?: number
+  ): EventSubscription {
+    return subscribeContractEvent(
+      Escrow.contract,
+      this,
+      options,
+      "FreelancerRefunded",
+      fromCount
+    );
+  }
+
   subscribeAllEvents(
     options: EventSubscribeOptions<
       | EscrowTypes.FreelancerAcceptedEvent
@@ -423,6 +459,7 @@ export class EscrowInstance extends ContractInstance {
       | EscrowTypes.DisputeOpenedEvent
       | EscrowTypes.DisputeResolvedEvent
       | EscrowTypes.EscrowCancelledEvent
+      | EscrowTypes.FreelancerRefundedEvent
     >,
     fromCount?: number
   ): EventSubscription {
@@ -472,6 +509,17 @@ export class EscrowInstance extends ContractInstance {
       params: EscrowTypes.CallMethodParams<"resolve">
     ): Promise<EscrowTypes.CallMethodResult<"resolve">> => {
       return callMethod(Escrow, this, "resolve", params, getContractByCodeHash);
+    },
+    refundByFreelancer: async (
+      params?: EscrowTypes.CallMethodParams<"refundByFreelancer">
+    ): Promise<EscrowTypes.CallMethodResult<"refundByFreelancer">> => {
+      return callMethod(
+        Escrow,
+        this,
+        "refundByFreelancer",
+        params === undefined ? {} : params,
+        getContractByCodeHash
+      );
     },
     cancelByClient: async (
       params?: EscrowTypes.CallMethodParams<"cancelByClient">
@@ -555,6 +603,11 @@ export class EscrowInstance extends ContractInstance {
       params: EscrowTypes.SignExecuteMethodParams<"resolve">
     ): Promise<EscrowTypes.SignExecuteMethodResult<"resolve">> => {
       return signExecuteMethod(Escrow, this, "resolve", params);
+    },
+    refundByFreelancer: async (
+      params: EscrowTypes.SignExecuteMethodParams<"refundByFreelancer">
+    ): Promise<EscrowTypes.SignExecuteMethodResult<"refundByFreelancer">> => {
+      return signExecuteMethod(Escrow, this, "refundByFreelancer", params);
     },
     cancelByClient: async (
       params: EscrowTypes.SignExecuteMethodParams<"cancelByClient">

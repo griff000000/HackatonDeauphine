@@ -331,6 +331,76 @@ describe('Escrow contract', () => {
     )
   })
 
+  // ==================== refundByFreelancer ====================
+
+  it('refundByFreelancer: freelancer refunds client, both get their funds back', async () => {
+    const fields = { ...getBaseFields(), status: 1n }
+    const totalInContract = testAmount + testCollateral
+
+    const testResult = await Escrow.tests.refundByFreelancer({
+      contractAddress: escrowAddress,
+      initialAsset: { alphAmount: totalInContract + ONE_ALPH },
+      initialFields: fields,
+      inputAssets: [{ address: freelancerAddress, asset: { alphAmount: ONE_ALPH } }],
+      existingContracts: [TrustRegistry.stateForTest({}, { alphAmount: ONE_ALPH }, registryAddress)]
+    })
+
+    // Contract destroyed
+    const escrowStillExists = testResult.contracts.some(c => c.address === escrowAddress)
+    expect(escrowStillExists).toBe(false)
+
+    // Client should get amount back
+    const clientOutputs = testResult.txOutputs.filter(
+      o => o.address === clientAddress && o.type === 'AssetOutput'
+    )
+    const clientReceived = clientOutputs.reduce((sum, o) => sum + BigInt(o.alphAmount), 0n)
+    expect(clientReceived).toBeGreaterThanOrEqual(testAmount)
+
+    // Freelancer should get collateral back
+    const freelancerOutputs = testResult.txOutputs.filter(
+      o => o.address === freelancerAddress && o.type === 'AssetOutput'
+    )
+    const freelancerReceived = freelancerOutputs.reduce((sum, o) => sum + BigInt(o.alphAmount), 0n)
+    expect(freelancerReceived).toBeGreaterThanOrEqual(testCollateral)
+
+    // Check event
+    const event = testResult.events.find(e => e.name === 'FreelancerRefunded') as EscrowTypes.FreelancerRefundedEvent
+    expect(event).toBeDefined()
+    expect(event.fields.freelancer).toEqual(freelancerAddress)
+  })
+
+  it('refundByFreelancer: fails if not freelancer', async () => {
+    const fields = { ...getBaseFields(), status: 1n }
+
+    await expectAssertionError(
+      Escrow.tests.refundByFreelancer({
+        contractAddress: escrowAddress,
+        initialAsset: { alphAmount: testAmount + testCollateral + ONE_ALPH },
+        initialFields: fields,
+        inputAssets: [{ address: clientAddress, asset: { alphAmount: ONE_ALPH } }],
+        existingContracts: [TrustRegistry.stateForTest({}, { alphAmount: ONE_ALPH }, registryAddress)]
+      }),
+      escrowAddress,
+      Escrow.consts.ErrorCodes.OnlyFreelancer
+    )
+  })
+
+  it('refundByFreelancer: fails if status is not 1 (Active)', async () => {
+    const fields = { ...getBaseFields(), status: 2n }
+
+    await expectAssertionError(
+      Escrow.tests.refundByFreelancer({
+        contractAddress: escrowAddress,
+        initialAsset: { alphAmount: testAmount + testCollateral + ONE_ALPH },
+        initialFields: fields,
+        inputAssets: [{ address: freelancerAddress, asset: { alphAmount: ONE_ALPH } }],
+        existingContracts: [TrustRegistry.stateForTest({}, { alphAmount: ONE_ALPH }, registryAddress)]
+      }),
+      escrowAddress,
+      Escrow.consts.ErrorCodes.InvalidStatus
+    )
+  })
+
   // ==================== autoClaim ====================
 
   it('autoClaim: freelancer claims after deadline + 48h', async () => {

@@ -17,6 +17,7 @@ import { default as CancelEscrowScriptJson } from "../CancelEscrow.ral.json";
 import { default as ClaimAfterDeadlineScriptJson } from "../ClaimAfterDeadline.ral.json";
 import { default as DeliverScriptJson } from "../Deliver.ral.json";
 import { default as OpenDisputeScriptJson } from "../OpenDispute.ral.json";
+import { default as RefundByFreelancerScriptJson } from "../RefundByFreelancer.ral.json";
 import { default as ReleasePaymentScriptJson } from "../ReleasePayment.ral.json";
 import { default as ResolveDisputeScriptJson } from "../ResolveDispute.ral.json";
 
@@ -42,6 +43,11 @@ export const Deliver = new ExecutableScript<{
 
 export const OpenDispute = new ExecutableScript<{ escrow: HexString }>(
   Script.fromJson(OpenDisputeScriptJson, "", []),
+  getContractByCodeHash
+);
+
+export const RefundByFreelancer = new ExecutableScript<{ escrow: HexString }>(
+  Script.fromJson(RefundByFreelancerScriptJson, "", []),
   getContractByCodeHash
 );
 

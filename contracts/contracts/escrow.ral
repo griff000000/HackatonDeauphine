@@ -17,6 +17,7 @@ Contract Escrow(
     event DisputeOpened(opener: Address)
     event DisputeResolved(arbiter: Address, toFreelancer: Bool)
     event EscrowCancelled(client: Address)
+    event FreelancerRefunded(freelancer: Address)
 
     enum ErrorCodes {
         InvalidStatus = 0
@@ -97,6 +98,22 @@ Contract Escrow(
         status = 4
 
         emit DisputeResolved(arbiter, toFreelancer)
+        destroySelf!(client)
+    }
+
+    // Le freelancer abandonne la mission et rembourse le client
+    @using(assetsInContract = true, updateFields = true)
+    pub fn refundByFreelancer() -> () {
+        assert!(status == 1, ErrorCodes.InvalidStatus)
+        checkCaller!(callerAddress!() == freelancer, ErrorCodes.OnlyFreelancer)
+
+        transferTokenFromSelf!(client, ALPH, amount)
+        transferTokenFromSelf!(freelancer, ALPH, collateral)
+        status = 4
+
+        trustRegistry.decreaseScore(freelancer, 3)
+
+        emit FreelancerRefunded(freelancer)
         destroySelf!(client)
     }
 

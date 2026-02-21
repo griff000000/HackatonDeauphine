@@ -15,6 +15,7 @@ Contrat persistant qui stocke le score de confiance des freelancers (0-100, déf
 - Mission réussie (`release`) → score **+5** (cap à 100)
 - Litige perdu (`resolve` contre freelancer) → score **-15** (floor à 0)
 - Litige gagné → score **+2**
+- Abandon volontaire (`refundByFreelancer`) → score **-3**
 
 ---
 
@@ -131,6 +132,15 @@ Contrat créé par le client pour chaque mission. Contient les fonds bloqués.
   - Status passe à **4 (Done)**. Le contrat se **détruit**. Emet `DisputeResolved`.
 - **TxScript** : `ResolveDispute(escrow, toFreelancer)`
 
+### `refundByFreelancer() → ()`
+
+- **Qui peut appeler** : **freelancer uniquement**
+- **Checks** :
+  - `status == 1` (Active) sinon `InvalidStatus`
+  - `callerAddress == freelancer` sinon `OnlyFreelancer`
+- **Comportement** : Le freelancer abandonne la mission. `amount` renvoyé au client, `collateral` rendu au freelancer. Score **-3** (pénalité légère — honnête mais n'a pas fini). Le contrat se **détruit**. Emet `FreelancerRefunded`.
+- **TxScript** : `RefundByFreelancer(escrow)`
+
 ### `cancelByClient() → ()`
 
 - **Qui peut appeler** : **client uniquement**
@@ -178,6 +188,7 @@ Contrat créé par le client pour chaque mission. Contient les fonds bloqués.
 | `PaymentReleased` | `to: Address, totalAmount: U256` | `release`, `autoClaim` |
 | `DisputeOpened` | `opener: Address` | `dispute` |
 | `DisputeResolved` | `arbiter: Address, toFreelancer: Bool` | `resolve` |
+| `FreelancerRefunded` | `freelancer: Address` | `refundByFreelancer` |
 | `EscrowCancelled` | `client: Address` | `cancelByClient` |
 
 ---
@@ -186,9 +197,14 @@ Contrat créé par le client pour chaque mission. Contient les fonds bloqués.
 
 ```
 0 Created  ──→  1 Active  ──→  2 Delivered  ──→  4 Done (release/autoClaim)
-    │                │               │
-    │                └───→ 3 Dispute ←┘
-    │                          │
-    │                          └──→ 4 Done (resolve)
+    │                │  │            │
+    │                │  │            └───→ 3 Dispute
+    │                │  │                      │
+    │                │  │                      └──→ 4 Done (resolve)
+    │                │  │
+    │                │  └──→ 4 Done (refundByFreelancer)
+    │                │
+    │                └───→ 3 Dispute ──→ 4 Done (resolve)
+    │
     └──→ 4 Done (cancelByClient)
 ```

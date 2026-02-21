@@ -9,54 +9,60 @@
     "ignoreCheckExternalCallerWarnings": false,
     "ignoreUnusedFunctionReturnWarnings": false,
     "skipAbstractContractCheck": false,
-    "skipTests": true
+    "skipTests": false
   },
   "infos": {
     "AcceptAndDeposit": {
       "sourceFile": "escrow_scripts.ral",
-      "sourceCodeHash": "b26cecfaf2f914999c521e99ee69117e3bcc27216a0c73596d7683e4e7e97196",
+      "sourceCodeHash": "913a99103b2f595e1d6b180f2615ae1926cc7b011cd1ec4370a5fe0a27d750a0",
       "bytecodeDebugPatch": "",
       "codeHashDebug": ""
     },
     "CancelEscrow": {
       "sourceFile": "escrow_scripts.ral",
-      "sourceCodeHash": "b26cecfaf2f914999c521e99ee69117e3bcc27216a0c73596d7683e4e7e97196",
+      "sourceCodeHash": "913a99103b2f595e1d6b180f2615ae1926cc7b011cd1ec4370a5fe0a27d750a0",
       "bytecodeDebugPatch": "",
       "codeHashDebug": ""
     },
     "ClaimAfterDeadline": {
       "sourceFile": "escrow_scripts.ral",
-      "sourceCodeHash": "b26cecfaf2f914999c521e99ee69117e3bcc27216a0c73596d7683e4e7e97196",
+      "sourceCodeHash": "913a99103b2f595e1d6b180f2615ae1926cc7b011cd1ec4370a5fe0a27d750a0",
       "bytecodeDebugPatch": "",
       "codeHashDebug": ""
     },
     "Deliver": {
       "sourceFile": "escrow_scripts.ral",
-      "sourceCodeHash": "b26cecfaf2f914999c521e99ee69117e3bcc27216a0c73596d7683e4e7e97196",
+      "sourceCodeHash": "913a99103b2f595e1d6b180f2615ae1926cc7b011cd1ec4370a5fe0a27d750a0",
       "bytecodeDebugPatch": "",
       "codeHashDebug": ""
     },
     "Escrow": {
       "sourceFile": "escrow.ral",
-      "sourceCodeHash": "c7dbc2dbc4876320e1efe70da2da7c56211c10c83c79c584616adf558ece6a49",
+      "sourceCodeHash": "a6b1c517043412db268dcb20b9bae86817aad9ce6fa01e0a6a35f6068a22f4be",
       "bytecodeDebugPatch": "",
-      "codeHashDebug": "eff62d0d8d717d21deabb92da63bbe28390e1da74637a92889738e74e000fbf4"
+      "codeHashDebug": "401412d777a6e6bbfc5e0c8f645b62697aea9552bebbc73524b32b0f12095f4f"
     },
     "OpenDispute": {
       "sourceFile": "escrow_scripts.ral",
-      "sourceCodeHash": "b26cecfaf2f914999c521e99ee69117e3bcc27216a0c73596d7683e4e7e97196",
+      "sourceCodeHash": "913a99103b2f595e1d6b180f2615ae1926cc7b011cd1ec4370a5fe0a27d750a0",
+      "bytecodeDebugPatch": "",
+      "codeHashDebug": ""
+    },
+    "RefundByFreelancer": {
+      "sourceFile": "escrow_scripts.ral",
+      "sourceCodeHash": "913a99103b2f595e1d6b180f2615ae1926cc7b011cd1ec4370a5fe0a27d750a0",
       "bytecodeDebugPatch": "",
       "codeHashDebug": ""
     },
     "ReleasePayment": {
       "sourceFile": "escrow_scripts.ral",
-      "sourceCodeHash": "b26cecfaf2f914999c521e99ee69117e3bcc27216a0c73596d7683e4e7e97196",
+      "sourceCodeHash": "913a99103b2f595e1d6b180f2615ae1926cc7b011cd1ec4370a5fe0a27d750a0",
       "bytecodeDebugPatch": "",
       "codeHashDebug": ""
     },
     "ResolveDispute": {
       "sourceFile": "escrow_scripts.ral",
-      "sourceCodeHash": "b26cecfaf2f914999c521e99ee69117e3bcc27216a0c73596d7683e4e7e97196",
+      "sourceCodeHash": "913a99103b2f595e1d6b180f2615ae1926cc7b011cd1ec4370a5fe0a27d750a0",
       "bytecodeDebugPatch": "",
       "codeHashDebug": ""
     },
