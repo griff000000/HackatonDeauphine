@@ -68,9 +68,9 @@
     },
     "TrustRegistry": {
       "sourceFile": "trust_registry.ral",
-      "sourceCodeHash": "f5115449412b409dabd249c1a9debf3c647d8f94a6fdc0195ea7255c4994aa0e",
-      "bytecodeDebugPatch": "=14-2+bb=2-2+46=2+c=1-1=221-1+5=51-1+c=38+7a7e0214696e73657274206174206d617020706174683a2000=556",
-      "codeHashDebug": "195ead5d24a0077e242f81142d825880ad2496128ce6691073ea35b5751db9ce"
+      "sourceCodeHash": "2d32cebd4e49a8db04515ce04fbe58b6519d58ac863f2c8f1cf1c5f1a17046cd",
+      "bytecodeDebugPatch": "=14-2+bb=2-2+28=2-1=1+2=221-1+5=51-1+c=38+7a7e0214696e73657274206174206d617020706174683a2000=442",
+      "codeHashDebug": "f099882f2b813e0ed6ae776b4ceb1fdcf7e26301da87eafece2d01b52ef64b99"
     }
   }
 }

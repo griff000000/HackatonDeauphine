@@ -525,6 +525,30 @@ describe('TrustRegistry contract', () => {
     expect((event.fields as any).newScore).toEqual(100n)
   })
 
+  it('increaseScore: no-op if score not initialized', async () => {
+    const testResult = await TrustRegistry.tests.increaseScore({
+      contractAddress: registryAddress,
+      initialAsset: { alphAmount: ONE_ALPH },
+      args: { freelancer: freelancerAddress, amount: 5n },
+      inputAssets: [{ address: testAddress, asset: { alphAmount: ONE_ALPH } }]
+    })
+
+    // No event emitted since score not in mapping
+    expect(testResult.events.length).toEqual(0)
+  })
+
+  it('decreaseScore: no-op if score not initialized', async () => {
+    const testResult = await TrustRegistry.tests.decreaseScore({
+      contractAddress: registryAddress,
+      initialAsset: { alphAmount: ONE_ALPH },
+      args: { freelancer: freelancerAddress, amount: 5n },
+      inputAssets: [{ address: testAddress, asset: { alphAmount: ONE_ALPH } }]
+    })
+
+    // No event emitted since score not in mapping
+    expect(testResult.events.length).toEqual(0)
+  })
+
   it('decreaseScore: floors at 0', async () => {
     const testResult = await TrustRegistry.tests.decreaseScore({
       contractAddress: registryAddress,

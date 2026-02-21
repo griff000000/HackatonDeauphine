@@ -220,8 +220,8 @@ class Factory extends ContractFactory<TrustRegistryInstance, {}> {
 export const TrustRegistry = new Factory(
   Contract.fromJson(
     TrustRegistryContractJson,
-    "=14-2+bb=2-2+46=2+c=1-1=221-1+5=51-1+c=38+7a7e0214696e73657274206174206d617020706174683a2000=556",
-    "195ead5d24a0077e242f81142d825880ad2496128ce6691073ea35b5751db9ce",
+    "=14-2+bb=2-2+28=2-1=1+2=221-1+5=51-1+c=38+7a7e0214696e73657274206174206d617020706174683a2000=442",
+    "f099882f2b813e0ed6ae776b4ceb1fdcf7e26301da87eafece2d01b52ef64b99",
     []
   )
 );
