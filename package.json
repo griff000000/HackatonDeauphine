@@ -7,13 +7,13 @@
     "app"
   ],
   "scripts": {
-    "compile": "yarn workspace my-contracts compile",
-    "deploy": "yarn workspace my-contracts deploy",
-    "build:contracts": "yarn workspace my-contracts build",
-    "test": "yarn workspace my-contracts test",
-    "dev": "yarn workspace my-dapp dev",
-    "start": "yarn workspace my-dapp start",
-    "build:app": "yarn workspace my-dapp build"
+    "compile": "npm run compile --workspace=my-contracts",
+    "deploy": "npm run deploy --workspace=my-contracts",
+    "build:contracts": "npm run build --workspace=my-contracts",
+    "test": "npm run test --workspace=my-contracts",
+    "dev": "npm run dev --workspace=my-dapp",
+    "start": "npm run start --workspace=my-dapp",
+    "build:app": "npm run build --workspace=my-dapp"
   },
   "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
 }

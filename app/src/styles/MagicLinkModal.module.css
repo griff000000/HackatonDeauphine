@@ -1,0 +1,308 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  background-color: transparent;
+}
+
+.modalContainer {
+  width: 100%;
+  max-width: 482px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* --- Badge --- */
+.badgeContainer {
+  padding: 12px 24px 12px 12px;
+  background: #1A1A1A;
+  border-radius: 56px;
+  outline: 1px solid rgba(255, 255, 255, 0.12);
+  outline-offset: -1px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.iconWrapper {
+  padding: 8px;
+  border-radius: 48px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.glowEffect {
+  position: absolute;
+  width: 118px;
+  height: 53px;
+  left: -32px;
+  top: -5px;
+  background: white;
+  box-shadow: 13.6px 13.6px 13.6px rgba(255, 255, 255, 0.5);
+  filter: blur(6.8px);
+}
+
+.iconInner {
+  width: 24px;
+  height: 24px;
+  position: relative;
+  z-index: 1; /* Above the glow */
+}
+
+.badgeText {
+  color: #888888;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  line-height: 20px;
+  word-wrap: break-word;
+}
+
+
+/* --- Main Card --- */
+.mainCard {
+  width: 100%;
+  padding: 32px;
+  background: #1A1A1A;
+  border-radius: 24px;
+  outline: 1px solid rgba(255, 255, 255, 0.12);
+  outline-offset: -1px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  overflow: hidden;
+}
+
+/* Header Section */
+.headerSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  width: 348px;
+  text-align: center;
+  color: white;
+  font-size: 20px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  line-height: 28px;
+  margin: 0;
+}
+
+.subtitle {
+  width: 296px;
+  text-align: center;
+  color: #888888;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  line-height: 20px;
+  margin: 0;
+}
+
+/* Details Box */
+.detailsBox {
+  width: 100%;
+  padding: 16px;
+  background: #212121;
+  border-radius: 16px;
+  outline: 1px solid rgba(255, 255, 255, 0.12);
+  outline-offset: -1px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contractId {
+  color: #555555;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.contractName {
+  color: #888888;
+  font-size: 20px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  line-height: 28px;
+  margin: 0;
+}
+
+.infoList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 43px;
+  border-bottom: 0.67px solid #27272A;
+}
+
+.infoRowLast {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 43px;
+}
+
+.rowLabel {
+  color: #555555;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  line-height: 20px;
+  padding: 0 2px;
+}
+
+.rowValueContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowValue {
+  color: #555555;
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.alphIconContainer {
+  width: 14.47px;
+  height: 14px;
+  background: #DB5F37;
+  box-shadow: 0px 0.24px 0.24px rgba(0, 0, 0, 0.25);
+  border-radius: 92px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.copyIcon {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.copyIcon:hover {
+  color: white;
+}
+
+
+/* Alert Box */
+.alertBox {
+  width: 100%;
+  padding: 16px;
+  background: #212121;
+  border-radius: 16px;
+  outline: 1px solid rgba(255, 255, 255, 0.12);
+  outline-offset: -1px;
+}
+
+.alertContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.alertText {
+  color: #555555;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  line-height: 20px;
+  flex: 1;
+  margin: 0;
+}
+
+/* Action Area */
+.actionArea {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.connectWalletBtn {
+  width: 100%;
+  padding: 16px;
+  background: white;
+  border-radius: 1024px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.connectWalletBtn:hover {
+  opacity: 0.9;
+}
+
+.connectWalletBtn:active {
+  transform: scale(0.98);
+}
+
+.connectWalletBtn {
+  color: black;
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.footerLink {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.footerText {
+  color: #888888;
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.footerLinkBold {
+  color: #DB5F37;
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  line-height: 16px;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.footerLinkBold:hover {
+  opacity: 0.8;
+}

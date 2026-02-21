@@ -1,0 +1,784 @@
+.page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #232323;
+  overflow: hidden;
+}
+
+.main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 125px;
+  width: 100%;
+  min-height: calc(100vh - 80px); /* Adjust based on navbar */
+}
+
+.container {
+  display: flex;
+  gap: var(--spacing-xxsm); /* 12px */
+  width: 1190px;
+  max-width: 100%;
+  margin-top: 40px;
+  align-items: flex-start;
+}
+
+.leftColumn {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--spacing-xxsm);
+  min-width: 0;
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxsm);
+  width: 395px;
+  flex-shrink: 0;
+}
+
+.card {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-600);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm); /* 24px */
+  width: 100%;
+  overflow: hidden;
+}
+
+.cardInfo {
+  background-color: var(--color-card);
+  border: 0.667px solid #2A2A2A;
+  border-radius: 16px;
+  padding: var(--spacing-md) var(--spacing-md) var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+/* --- MAIN CARD --- */
+
+.mainCardDark {
+  width: 100%;
+  padding: 32px;
+  background: #1A1A1A;
+  border-radius: 24px;
+  outline: 1px solid rgba(255, 255, 255, 0.12);
+  outline-offset: -1px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.mainCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.statusPillGreenDark {
+  padding: 8px 16px 8px 8px;
+  background: #1A1A1A;
+  border-radius: 56px;
+  outline: 1px solid rgba(255, 255, 255, 0.12);
+  outline-offset: -1px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.statusPillGreenDark span {
+  color: #888888;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.statusIconGreenGlow {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #A3E635;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 0 10px rgba(163, 230, 53, 0.4);
+}
+
+.contractIdDark {
+  color: #555555;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.mainCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.projectTitleDark {
+  color: #888888;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  margin: 0;
+}
+
+.amountsVerticalContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  position: relative;
+  margin-top: 12px;
+}
+
+.amountBlockDark {
+  padding: 16px;
+  background: #212121;
+  border-radius: 16px;
+  outline: 1px solid rgba(255, 255, 255, 0.12);
+  outline-offset: -1px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.amountHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.amountTitleDark {
+  color: #555555;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.alphBadgeDark {
+  padding: 6px 10px 6px 8px;
+  background: #141414;
+  border-radius: 1024px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alphBadgeDark span {
+  color: #F5F5F5;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.alphIconOrange {
+  width: 18px;
+  height: 18px;
+  background: #DB5F37;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0px 0.3px 0.3px rgba(0, 0, 0, 0.25);
+}
+
+.amountValuesColDark {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.amountValuesColInner {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.amountPrimaryDark {
+  color: #555555;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 32px;
+}
+
+.amountSecondaryDark {
+  color: #555555;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  margin-left: 96px;
+}
+
+.lockAbsContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 65px;
+  height: 65px;
+  background: #1A1A1A;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.lockAbsInner {
+  width: 52px;
+  height: 52px;
+  background: #2A2A2A;
+  border-radius: 50%;
+  outline: 1.44px solid #1A1A1A;
+  outline-offset: -1.44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stakeholdersListDark {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.stakeholderRowDark {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 48px;
+  border-bottom: 0.67px solid #27272A;
+  padding: 8px 0;
+}
+
+.stakeholderRowDark:last-child {
+  border-bottom: none;
+}
+
+.stakeholderLeftDark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 2px;
+}
+
+.stakeholderAvatarPlaceholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #4A5568;
+}
+
+.stakeholderAvatarFreelance {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #F97316, #EF4444);
+}
+
+.stakeholderAvatarArbitre {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #EAB308;
+}
+
+.stakeholderRoleDark {
+  color: #E4E4E7;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.trustScoreMuted {
+  color: #888888;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 16px;
+  margin-left: 8px;
+}
+
+.stakeholderAddressDark {
+  color: #555555;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.deadlineSectionDark {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  margin-top: 12px;
+}
+
+.deadlineLabelDark {
+  color: #888888;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.deadlineMonthYear {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.deadlineMonthText {
+  color: #DEDEDE;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  margin-right: 4px;
+}
+
+.deadlineYearText {
+  color: #555555;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.datePickerContainer {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.datePickerContainer:active {
+  cursor: grabbing;
+}
+
+.datePicker {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+  width: max-content;
+}
+
+.dateChip {
+  min-width: 42px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background-color: #2A2A2A;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555555;
+  line-height: 20px;
+  cursor: grab;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.dateChip:active {
+  cursor: grabbing;
+}
+
+.dateChipSelected {
+  background-color: #DEDEDE;
+  color: #1A1A1A;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.fadeLeft,
+.fadeRight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.fadeLeft {
+  left: 0;
+  background: linear-gradient(to right, #1A1A1A 14%, transparent 100%);
+}
+
+.fadeRight {
+  right: 0;
+  background: linear-gradient(to left, #1A1A1A 14%, transparent 100%);
+}
+
+/* --- RIGHT COLUMN CARDS --- */
+.cardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.cardSubtitle {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.magicLinkWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.magicLinkHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.magicLinkHeaderTitle {
+  color: #888888;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.magicLinkBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #212121;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 12px;
+  width: 100%;
+}
+
+.magicLinkText {
+  color: #555555;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  word-wrap: break-word;
+}
+
+.magicLinkCopyBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.magicLinkCopyBtn:hover {
+  opacity: 0.8;
+}
+
+.actionTopArea {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.statusPillDark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 8px 16px 8px 8px;
+  background: #1A1A1A;
+  border-radius: 56px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  width: max-content;
+}
+
+.statusIconSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(234, 179, 8, 0.3);
+  border-top-color: #EAB308;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.statusTextDark {
+  color: #888888;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.actionSubtitle {
+  color: #888888;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  margin: 0;
+}
+
+.btnCancelWhite {
+  background: white;
+  color: black;
+  border: none;
+  border-radius: 1024px;
+  padding: 16px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.btnCancelWhite:hover {
+  opacity: 0.9;
+}
+
+/* --- INFORMATIONS DU CONTRAT (DARK) --- */
+.infoCardDark {
+  width: 100%;
+  padding: 32px 32px 24px 32px;
+  background: #1A1A1A;
+  border-radius: 16px;
+  border: 0.67px solid #2A2A2A;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.infoCardHeader {
+  display: flex;
+  align-items: flex-start;
+  height: 23px;
+}
+
+.infoCardTitle {
+  color: #888888;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 23.4px;
+}
+
+.infoCardList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.infoRowDark {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 43px;
+  border-bottom: 0.67px solid #27272A;
+}
+
+.infoRowDarkLast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 43px;
+}
+
+.infoLabelContainer {
+  display: flex;
+  align-items: center;
+  padding: 0 2px;
+}
+
+.infoLabelDark {
+  color: #555555;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.infoValueContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.infoValueContainerWithIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.infoValueContainerWithIcon:hover {
+  opacity: 0.8;
+}
+
+.infoValueDark {
+  color: #555555;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.infoValueMuted {
+  color: #555555;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+/* --- TIMELINE (DARK) --- */
+.timelineContainerDark {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.timelineItemDark {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  min-height: 73px;
+  position: relative;
+}
+
+.timelineItemDarkLast {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  min-height: 57px;
+  position: relative;
+}
+
+.timelineItemDark::before {
+  content: '';
+  position: absolute;
+  left: 15px; /* (32px icon width / 2) - (2px line width / 2) = 15px */
+  top: 32px; /* Start right below the 32x32px icon */
+  bottom: 0; /* Stretch to the bottom of the item */
+  width: 2px;
+  background: #444444;
+  z-index: 0;
+}
+
+.timelineIconContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 32px;
+  height: 100%;
+  position: relative;
+  z-index: 1; /* keep icon above the line */
+}
+
+.timelineIconContainerLast {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 32px;
+  height: 100%;
+  padding-bottom: 41px;
+  position: relative;
+  z-index: 1;
+}
+
+.timelineIconBlueGradient {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse 120.89% 120.89% at 82.81% 106.59%, #3B82F6 0%, #557CF1 13%, #27B8ED 38%, #3A4BBE 79%, #15499E 100%);
+  flex-shrink: 0;
+}
+
+.timelineIconGreenGradient {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse 120.89% 120.89% at 82.81% 106.59%, #3BF683 0%, #47DE6F 17%, #BFED27 38%, #2EBD41 79%, #35E263 100%), #10B981;
+  flex-shrink: 0;
+}
+
+.timelinePlusIcon {
+  color: white;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.timelineContentDark {
+  display: flex;
+  flex-direction: column;
+  padding-top: 4px;
+  padding-bottom: 24px;
+  gap: 4px;
+  flex: 1;
+}
+
+.timelineEventTitleDark {
+  color: #888888;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22.4px;
+}
+
+.timelineDateRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.timelineDateDark {
+  color: #444444;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 19.2px;
+}
+
+.timelineTxHash {
+  color: #48AC67;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 400;
+  line-height: 17.6px;
+}

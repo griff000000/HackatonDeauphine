@@ -1,0 +1,95 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1190px;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-xsm) 0;
+  z-index: 100;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow: hidden;
+}
+
+.logoText {
+  font-size: 19.7px;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-white);
+  letter-spacing: -0.02em;
+  line-height: normal;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xxsm);
+}
+
+.navLink {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-nav);
+  line-height: var(--lh-caption);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xxxsm);
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: var(--color-white);
+}
+
+.chevron {
+  margin-top: 2px;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.connectButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xxxsm);
+  background-color: var(--color-white);
+  color: var(--color-black);
+  border-radius: var(--radius-round);
+  padding: var(--spacing-xxxsm) var(--spacing-xsm);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--lh-caption);
+  transition: opacity 0.2s ease;
+}
+
+.connectButton:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 1200px) {
+  .navbar {
+    padding: var(--spacing-xsm) var(--spacing-sm);
+  }
+}
+
+@media (max-width: 640px) {
+  .navLinks {
+    display: none;
+  }
+}
