@@ -58,6 +58,7 @@ export default function CreateEscrow() {
   } | null
 
   const [uploadedFile, setUploadedFile] = useState<FileState>(null)
+  const [ipfsHash, setIpfsHash] = useState<string>('')
 
   const centerSelectedDate = (month: number, year: number, day: number) => {
     setTimeout(() => {
@@ -86,19 +87,29 @@ export default function CreateEscrow() {
     return validTypes.includes(file.type) || (extension && validExtensions.includes(extension));
   }
 
-  const simulateUpload = (file: File) => {
+  const performRealUpload = async (file: File) => {
     setUploadedFile({ file, progress: 0, status: 'uploading' })
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += Math.random() * 20;
-      if (progress >= 100) {
-        progress = 100;
-        setUploadedFile({ file, progress, status: 'success' })
-        clearInterval(interval);
-      } else {
-        setUploadedFile({ file, progress, status: 'uploading' })
-      }
-    }, 150);
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      // Use a small trick to simulate progress since fetch doesn't support it directly
+      // but for small files it's almost instant anyway.
+      const response = await fetch('/api/ipfs/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) throw new Error('Upload failed')
+
+      const data = await response.json()
+      setIpfsHash(data.cid)
+      setUploadedFile({ file, progress: 100, status: 'success' })
+    } catch (error) {
+      console.error('IPFS upload error:', error)
+      setUploadedFile({ file, progress: 0, status: 'error' })
+    }
   }
 
   const handleDragFile = (e: React.DragEvent) => {
@@ -124,7 +135,7 @@ export default function CreateEscrow() {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       if (isValidFileType(file)) {
-        simulateUpload(file);
+        performRealUpload(file);
       }
     }
   }
@@ -133,13 +144,14 @@ export default function CreateEscrow() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (isValidFileType(file)) {
-        simulateUpload(file);
+        performRealUpload(file);
       }
     }
   }
 
   const handleDeleteFile = () => {
     setUploadedFile(null)
+    setIpfsHash('')
   }
 
   const handlePrevMonth = () => {
@@ -194,7 +206,7 @@ export default function CreateEscrow() {
     numericAmount > 0 &&
     isAddressValid &&
     selectedDay > 0 &&
-    uploadedFile?.status === 'success'
+    uploadedFile?.status === 'success' && ipfsHash !== ''
 
   const handleConfirm = async () => {
     if (!signer || !account) return
@@ -221,7 +233,7 @@ export default function CreateEscrow() {
       const collateralAtto = collateralResult.returns
       console.log('[3] Collateral:', collateralAtto.toString())
 
-      const cdcHash = stringToHex(projectName)
+      const cdcHash = stringToHex(ipfsHash)
 
       const arbiterAddress = account.address
 

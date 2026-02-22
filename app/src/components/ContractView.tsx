@@ -17,7 +17,8 @@ import {
   Gavel,
   Warning,
   ArrowCounterClockwise,
-  Timer
+  Timer,
+  FilePdf
 } from '@phosphor-icons/react'
 import { useWallet } from '@alephium/web3-react'
 import { hexToString, ONE_ALPH, DUST_AMOUNT, stringToHex, binToHex, contractIdFromAddress } from '@alephium/web3'
@@ -472,6 +473,35 @@ export default function ContractView({ contractId }: ContractViewProps) {
                      <div className={styles.fadeRight} />
                    </div>
                 </div>
+
+                {/* Documents / CDC */}
+                {escrowState.cdcHash && (
+                  <div className={styles.deadlineSectionDark} style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px' }}>
+                    <span className={styles.deadlineLabelDark}>Cahier des Charges</span>
+                    <a
+                      href={`https://gateway.pinata.cloud/ipfs/${escrowState.cdcHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        color: '#4AEDC4',
+                        fontSize: '13px',
+                        textDecoration: 'none',
+                        marginTop: '8px',
+                        background: 'rgba(74, 237, 196, 0.1)',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        width: 'fit-content'
+                      }}
+                      className="gradient-hover-btn"
+                    >
+                      <FilePdf size={18} weight="bold" />
+                      Voir le document
+                    </a>
+                  </div>
+                )}
 
                 {escrowState.deliverableLink && (
                   <div className={styles.deadlineSectionDark}>
