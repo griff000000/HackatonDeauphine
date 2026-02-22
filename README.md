@@ -155,13 +155,16 @@ trove/
 - [Yarn](https://classic.yarnpkg.com/) v1 (`npm install -g yarn`)
 - [Docker](https://www.docker.com/) + Docker Compose
 
-### One command
+### Setup
 
 ```bash
 git clone <repo-url> && cd HackatonDeauphine
 yarn install
+cp app/.env.example app/.env.local
 yarn go
 ```
+
+> **Note on `.env.example`:** Yes, we know you're not supposed to commit API keys in a repo. These are shared Pinata (IPFS) credentials for the hackathon — they're free-tier, non-sensitive, and it saves reviewers from setting up their own. Don't do this in production.
 
 `yarn go` starts the Docker devnet, compiles Ralph contracts, deploys them, builds TypeScript bindings, and launches the frontend. Everything.
 
