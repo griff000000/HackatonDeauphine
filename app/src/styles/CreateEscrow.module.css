@@ -489,6 +489,7 @@
   font-size: var(--text-xs);
   font-weight: var(--font-weight-semibold);
   line-height: var(--lh-caption);
+  border: none;
   transition: all 0.2s ease;
 }
 

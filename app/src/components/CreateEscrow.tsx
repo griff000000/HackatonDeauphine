@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, useMotionValue, animate } from 'framer-motion'
 import { UploadSimple, FilePdf, FileImage, FileDoc, File as FileIcon, X, LockSimple, Check, Copy, ArrowRight } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
-import { useWallet } from '@alephium/web3-react'
+import { useWallet, AlephiumConnectButton } from '@alephium/web3-react'
 import { ONE_ALPH, DUST_AMOUNT, stringToHex, addressFromContractId } from '@alephium/web3'
 import { Escrow, TrustRegistry } from 'my-contracts'
 import { getTrustRegistryAddress, getTrustRegistryId, ARBITER_ADDRESS } from '@/utils/alephium'
@@ -670,20 +670,21 @@ export default function CreateEscrow() {
         {/* CTA Button */}
         <motion.div variants={itemVariants}>
           {!isConnected ? (
-          <motion.button
-            className={`${styles.ctaButton} gradient-hover-btn`}
-            type="button"
-            disabled={!isFormComplete}
-            onClick={() => {
-              alert('Please connect your wallet using the button in the navigation bar.')
-            }}
-          >
-            Connect Wallet
-            <svg width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 0.5L5.5 7L0 13.5" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M4.5 0.5L10 7L4.5 13.5" stroke="currentColor" strokeWidth="1.5"/>
-            </svg>
-          </motion.button>
+          <AlephiumConnectButton.Custom>
+            {({ show }) => (
+              <motion.button
+                className={`${styles.ctaButton} gradient-hover-btn`}
+                type="button"
+                onClick={show}
+              >
+                Connect Wallet
+                <svg width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0 0.5L5.5 7L0 13.5" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M4.5 0.5L10 7L4.5 13.5" stroke="currentColor" strokeWidth="1.5"/>
+                </svg>
+              </motion.button>
+            )}
+          </AlephiumConnectButton.Custom>
         ) : (
           <motion.button
             className={`${styles.ctaButtonConfirm} gradient-hover-btn`}
@@ -693,7 +694,7 @@ export default function CreateEscrow() {
             whileHover="hover"
             onClick={handleConfirm}
           >
-            <LockSimple size={16} weight="fill" color="#000" />
+            <LockSimple size={16} weight="fill" color="currentColor" />
             <div className={styles.rollOverContainer}>
               <motion.span
                 className={styles.rollOverText}

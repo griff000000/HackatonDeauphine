@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { motion, useMotionValue, animate } from 'framer-motion'
+import { motion, useMotionValue, animate, AnimatePresence } from 'framer-motion'
 import {
   Check,
   Copy,
@@ -18,7 +18,13 @@ import {
   Warning,
   ArrowCounterClockwise,
   Timer,
-  FilePdf
+  FilePdf,
+  CaretDown,
+  FileX,
+  Clock,
+  WarningCircle,
+  ChatCenteredDots,
+  DotsThreeOutline
 } from '@phosphor-icons/react'
 import { useWallet } from '@alephium/web3-react'
 import { hexToString, ONE_ALPH, DUST_AMOUNT, stringToHex, binToHex, contractIdFromAddress } from '@alephium/web3'
@@ -84,6 +90,16 @@ export default function ContractView({ contractId }: ContractViewProps) {
   const [actionLoading, setActionLoading] = useState(false)
   const [trustScore, setTrustScore] = useState<bigint | null>(null)
 
+  const [isDisputeDropdownOpen, setIsDisputeDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const disputeOptions = [
+    { label: 'Qualité du travail insuffisante', icon: <FileX size={16} /> },
+    { label: 'Retard de livraison important', icon: <Clock size={16} /> },
+    { label: 'Cahier des charges non respecté', icon: <WarningCircle size={16} /> },
+    { label: 'Communication insuffisante', icon: <ChatCenteredDots size={16} /> },
+    { label: 'Autre raison', icon: <DotsThreeOutline size={16} /> },
+  ]
   const [deliverLink, setDeliverLink] = useState('')
   const [disputeReason, setDisputeReason] = useState('')
   const [evidenceText, setEvidenceText] = useState('')
@@ -96,6 +112,16 @@ export default function ContractView({ contractId }: ContractViewProps) {
 
   useEffect(() => {
     setMagicLinkUrl(typeof window !== 'undefined' ? window.location.href : '')
+  }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDisputeDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   const fetchContractState = useCallback(async (isRefresh = false) => {
@@ -182,10 +208,20 @@ export default function ContractView({ contractId }: ContractViewProps) {
     try {
       const result = await action()
       console.log('Action successful:', result)
-      if (result && typeof result === 'object' && 'txId' in result) {
-        console.log('Transaction ID:', result.txId)
+
+      // Polling refresh: try to fetch state multiple times to catch block updates
+      let attempts = 0
+      const maxAttempts = 5
+      const poll = async () => {
+        if (attempts >= maxAttempts) return
+        attempts++
+        await new Promise(r => setTimeout(r, 2000)) // Wait 2s between polls
+        console.log(`[ContractView] Polling refresh attempt ${attempts}/${maxAttempts}`)
+        await fetchContractState(true)
+        poll()
       }
-      setTimeout(() => fetchContractState(true), 3000)
+      poll()
+
     } catch (err: any) {
       console.error('Action failed (full):', JSON.stringify(err, null, 2))
       console.error('Action failed (raw):', err)
@@ -640,26 +676,26 @@ export default function ContractView({ contractId }: ContractViewProps) {
 
                 {statusNum === 0 && isClient && (
                   <button
-                    className={`${styles.btnCancelWhite} gradient-hover-btn`}
+                    className={`${styles.btnDanger} gradient-hover-btn`}
                     onClick={handleCancel}
                     disabled={actionLoading}
                   >
-                    {actionLoading ? <><span className={styles.btnSpinner} /> Annulation...</> : <><XCircle size={18} weight="bold" color="black" /> Annuler & Récupérer</>}
+                    {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Annulation...</> : <><XCircle size={18} weight="bold" color="currentColor" />Annuler & Récupérer</>}
                   </button>
                 )}
 
                 {statusNum === 0 && isFreelancer && (
                   <button
-                    className={`${styles.btnCancelWhite} gradient-hover-btn`}
+                    className={`${styles.btnSuccess} gradient-hover-btn`}
                     onClick={handleAcceptDeposit}
                     disabled={actionLoading}
                   >
-                    {actionLoading ? <><span className={styles.btnSpinner} /> Dépôt...</> : <><Check size={18} weight="bold" color="black" /> {`Accepter & Déposer ${formatAlph(escrowState.collateral)} ALPH`}</>}
+                    {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Dépôt...</> : <><Check size={18} weight="bold" color="currentColor" />{`Accepter & Déposer ${formatAlph(escrowState.collateral)} ALPH`}</>}
                   </button>
                 )}
 
                 {statusNum === 1 && isFreelancer && (
-                  <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <input
                         type="text"
@@ -671,57 +707,99 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button
-                        className={styles.btnSuccess}
-                        onClick={handleDeliver}
-                        disabled={actionLoading || !deliverLink.trim()}
-                        style={{ flex: 1 }}
-                      >
-                        {actionLoading ? <><span className={styles.btnSpinner} /> Envoi...</> : <><PaperPlaneRight size={18} weight="bold" color="#0a0a0a" /> Soumettre</>}
-                      </button>
-                      <button
-                        className={styles.btnDanger}
+                        className={`${styles.btnDanger} gradient-hover-btn`}
                         onClick={handleRefund}
                         disabled={actionLoading}
                         style={{ flex: 1 }}
                       >
-                        {actionLoading ? <><span className={styles.btnSpinner} /> Annulation...</> : <><ArrowCounterClockwise size={18} weight="bold" color="#0a0a0a" /> Abandonner</>}
+                        {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Abandonner...</> : <><ArrowCounterClockwise size={18} weight="bold" color="currentColor" />Abandonner</>}
+                      </button>
+                      <button
+                        className={`${styles.btnSuccess} gradient-hover-btn`}
+                        onClick={handleDeliver}
+                        disabled={actionLoading || !deliverLink.trim()}
+                        style={{ flex: 2 }}
+                      >
+                        {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Envoi...</> : <><PaperPlaneRight size={18} weight="bold" color="currentColor" />Soumettre</>}
                       </button>
                     </div>
-                  </>
+                  </div>
                 )}
 
                 {(statusNum === 1 || statusNum === 2) && (isClient || isFreelancer) && (
-                  <>
+                  <div style={{ marginTop: '24px' }}>
                     {!showDisputeInput ? (
                       <button
-                        className={styles.btnWarning}
+                        className={styles.btnLinkSubtle}
                         onClick={() => setShowDisputeInput(true)}
                       >
-                        <Warning size={18} weight="bold" color="#0a0a0a" />
                         Ouvrir un litige
                       </button>
                     ) : (
-                      <>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <input
-                            type="text"
-                            placeholder="Raison du litige..."
-                            value={disputeReason}
-                            onChange={(e) => setDisputeReason(e.target.value)}
-                            style={{ flex: 1, background: '#212121', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '8px 12px', color: 'white', fontSize: '12px' }}
-                          />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                        <div className={styles.dropdownContainer} ref={dropdownRef}>
+                          <button
+                            className={`${styles.dropdownTrigger} ${isDisputeDropdownOpen ? styles.dropdownTriggerActive : ''}`}
+                            onClick={() => setIsDisputeDropdownOpen(!isDisputeDropdownOpen)}
+                          >
+                            <div className={styles.dropdownValue}>
+                              <Warning size={18} weight="bold" color={disputeReason ? "#F6A83B" : "#888"} />
+                              {disputeReason ? (
+                                <span>{disputeReason}</span>
+                              ) : (
+                                <span className={styles.dropdownPlaceholder}>Choisir la raison du litige...</span>
+                              )}
+                            </div>
+                            <CaretDown
+                              size={16}
+                              weight="bold"
+                              style={{
+                                transform: isDisputeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                                transition: 'transform 0.2s ease',
+                                color: '#888'
+                              }}
+                            />
+                          </button>
+
+                          <AnimatePresence>
+                            {isDisputeDropdownOpen && (
+                              <motion.div
+                                className={styles.dropdownMenu}
+                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                transition={{ duration: 0.15, ease: 'easeOut' }}
+                              >
+                                {disputeOptions.map((option) => (
+                                  <div
+                                    key={option.label}
+                                    className={`${styles.dropdownItem} ${disputeReason === option.label ? styles.dropdownItemSelected : ''}`}
+                                    onClick={() => {
+                                      setDisputeReason(option.label)
+                                      setIsDisputeDropdownOpen(false)
+                                    }}
+                                  >
+                                    <div className={styles.dropdownItemIcon}>
+                                      {option.icon}
+                                    </div>
+                                    {option.label}
+                                  </div>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                           <button
-                            className={styles.btnWarning}
+                            className={`${styles.btnWarning} gradient-hover-btn`}
                             onClick={handleDispute}
-                            disabled={actionLoading || !disputeReason.trim()}
+                            disabled={actionLoading || !disputeReason}
                             style={{ flex: 1 }}
                           >
-                            {actionLoading ? <><span className={styles.btnSpinner} /> Envoi...</> : <><Warning size={16} weight="bold" color="#0a0a0a" /> Confirmer le litige</>}
+                            {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Envoi...</> : <><Warning size={16} weight="bold" color="currentColor" />Confirmer le litige</>}
                           </button>
                           <button
-                            onClick={() => { setShowDisputeInput(false); setDisputeReason(''); }}
+                            onClick={() => { setShowDisputeInput(false); setDisputeReason(''); setIsDisputeDropdownOpen(false); }}
                             style={{
                               width: '44px',
                               height: '44px',
@@ -738,18 +816,18 @@ export default function ContractView({ contractId }: ContractViewProps) {
                             <XCircle size={18} weight="bold" color="#888" />
                           </button>
                         </div>
-                      </>
+                      </div>
                     )}
-                  </>
+                  </div>
                 )}
 
                 {statusNum === 2 && isClient && (
                   <button
-                    className={styles.btnSuccess}
+                    className={`${styles.btnSuccess} gradient-hover-btn`}
                     onClick={handleRelease}
                     disabled={actionLoading}
                   >
-                    {actionLoading ? <><span className={styles.btnSpinner} /> Validation...</> : <><Check size={18} weight="bold" color="#0a0a0a" /> Valider & Libérer les fonds</>}
+                    {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Validation...</> : <><Check size={18} weight="bold" color="currentColor" />Valider & Libérer les fonds</>}
                   </button>
                 )}
 
