@@ -324,6 +324,20 @@ describe('Escrow contract', () => {
     const escrowStillExists = testResult.contracts.some(c => c.address === escrowAddress)
     expect(escrowStillExists).toBe(false)
 
+    // Check freelancer received amount + collateral
+    const freelancerOutputs = testResult.txOutputs.filter(
+      o => o.address === freelancerAddress && o.type === 'AssetOutput'
+    )
+    const freelancerReceived = freelancerOutputs.reduce((sum, o) => sum + BigInt(o.alphAmount), 0n)
+    expect(freelancerReceived).toBeGreaterThanOrEqual(totalInContract)
+
+    // Check client did NOT receive the main funds (only destroySelf storage refund)
+    const clientOutputs = testResult.txOutputs.filter(
+      o => o.address === clientAddress && o.type === 'AssetOutput'
+    )
+    const clientReceived = clientOutputs.reduce((sum, o) => sum + BigInt(o.alphAmount), 0n)
+    expect(clientReceived).toBeLessThan(totalInContract)
+
     // Check event
     const event = testResult.events.find(e => e.name === 'DisputeResolved') as EscrowTypes.DisputeResolvedEvent
     expect(event.fields.toFreelancer).toBe(true)
@@ -346,6 +360,21 @@ describe('Escrow contract', () => {
 
     const escrowStillExists = testResult.contracts.some(c => c.address === escrowAddress)
     expect(escrowStillExists).toBe(false)
+
+    // Check client received amount (not collateral)
+    const clientOutputs = testResult.txOutputs.filter(
+      o => o.address === clientAddress && o.type === 'AssetOutput'
+    )
+    const clientReceived = clientOutputs.reduce((sum, o) => sum + BigInt(o.alphAmount), 0n)
+    expect(clientReceived).toBeGreaterThanOrEqual(testAmount)
+
+    // Check freelancer received collateral (not amount)
+    const freelancerOutputs = testResult.txOutputs.filter(
+      o => o.address === freelancerAddress && o.type === 'AssetOutput'
+    )
+    const freelancerReceived = freelancerOutputs.reduce((sum, o) => sum + BigInt(o.alphAmount), 0n)
+    expect(freelancerReceived).toBeGreaterThanOrEqual(testCollateral)
+    expect(freelancerReceived).toBeLessThan(testAmount) // must NOT receive the amount
 
     const event = testResult.events.find(e => e.name === 'DisputeResolved') as EscrowTypes.DisputeResolvedEvent
     expect(event.fields.toFreelancer).toBe(false)
@@ -500,8 +529,23 @@ describe('Escrow contract', () => {
     const escrowStillExists = testResult.contracts.some(c => c.address === escrowAddress)
     expect(escrowStillExists).toBe(false)
 
+    // Check freelancer received amount + collateral
+    const freelancerOutputs = testResult.txOutputs.filter(
+      o => o.address === freelancerAddress && o.type === 'AssetOutput'
+    )
+    const freelancerReceived = freelancerOutputs.reduce((sum, o) => sum + BigInt(o.alphAmount), 0n)
+    expect(freelancerReceived).toBeGreaterThanOrEqual(totalInContract)
+
+    // Check client did NOT receive the main funds
+    const clientOutputs = testResult.txOutputs.filter(
+      o => o.address === clientAddress && o.type === 'AssetOutput'
+    )
+    const clientReceived = clientOutputs.reduce((sum, o) => sum + BigInt(o.alphAmount), 0n)
+    expect(clientReceived).toBeLessThan(totalInContract)
+
     const event = testResult.events.find(e => e.name === 'PaymentReleased') as EscrowTypes.PaymentReleasedEvent
     expect(event.fields.to).toEqual(freelancerAddress)
+    expect(event.fields.totalAmount).toEqual(totalInContract)
   })
 
   it('autoClaim: fails if deadline + 48h not reached', async () => {
