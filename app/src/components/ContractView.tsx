@@ -835,7 +835,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     onClick={handleRelease}
                     disabled={actionLoading}
                   >
-                    {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Validation...</> : <><Check size={18} weight="bold" color="currentColor" />Valider & Libérer les fonds</>}
+                    {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Validating...</> : <><Check size={18} weight="bold" color="currentColor" />Approve & Release funds</>}
                   </button>
                 )}
 
@@ -846,7 +846,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     disabled={actionLoading}
                     style={{ opacity: 0.7 }}
                   >
-                    {actionLoading ? <><span className={styles.btnSpinner} /> Réclamation...</> : <><Timer size={18} weight="bold" color="black" /> Auto-claim (après deadline + 48h)</>}
+                    {actionLoading ? <><span className={styles.btnSpinner} /> Claiming...</> : <><Timer size={18} weight="bold" color="black" /> Auto-claim (after deadline + 48h)</>}
                   </button>
                 )}
 
