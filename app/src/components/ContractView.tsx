@@ -855,7 +855,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <input
                         type="text"
-                        placeholder="Votre preuve / version des faits..."
+                        placeholder="Your evidence / version of events..."
                         value={evidenceText}
                         onChange={(e) => setEvidenceText(e.target.value)}
                         style={{ flex: 1, background: '#212121', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '8px 12px', color: 'white', fontSize: '12px' }}
