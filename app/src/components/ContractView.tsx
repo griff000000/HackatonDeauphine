@@ -33,6 +33,13 @@ import styles from '@/styles/ContractView.module.css'
 import Navbar from './Navbar'
 import Link from 'next/link'
 import ParticipantOrb from './ParticipantOrb'
+import { web3 } from '@alephium/web3'
+
+interface TimelineEvent {
+  type: 'Created' | 'Accepted' | 'Delivered' | 'Released' | 'Disputed' | 'Resolved'
+  timestamp: number
+  txId: string
+}
 
 interface ContractViewProps {
   contractId: string;
@@ -56,7 +63,8 @@ function formatAlph(attoAlph: bigint): string {
   return alph.toLocaleString('en-US', { maximumFractionDigits: 2 })
 }
 
-function formatDate(timestampMs: bigint): string {
+function formatDate(timestampMs: bigint | number | undefined): string {
+  if (timestampMs === undefined) return 'Pending...'
   const date = new Date(Number(timestampMs))
   return date.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
@@ -89,6 +97,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
   const [actionError, setActionError] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [trustScore, setTrustScore] = useState<bigint | null>(null)
+  const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([])
 
   const [isDisputeDropdownOpen, setIsDisputeDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -186,9 +195,38 @@ export default function ContractView({ contractId }: ContractViewProps) {
     }
   }, [contractId])
 
+  const fetchEvents = useCallback(async () => {
+    try {
+      const nodeProvider = web3.getCurrentNodeProvider()
+      const eventResult = await nodeProvider.events.getEventsContractContractaddress(contractId, { start: 0 })
+
+      const parsedEvents: TimelineEvent[] = eventResult.events.map((ev: any) => {
+        let type: TimelineEvent['type'] = 'Created'
+        if (ev.eventIndex === 0) type = 'Accepted'
+        if (ev.eventIndex === 1) type = 'Delivered'
+        if (ev.eventIndex === 2) type = 'Released'
+        if (ev.eventIndex === 3) type = 'Disputed'
+        if (ev.eventIndex === 5) type = 'Resolved'
+
+        return {
+          type,
+          timestamp: ev.blockTimestamp,
+          txId: ev.txId
+        }
+      })
+
+      // Sort by timestamp
+      parsedEvents.sort((a, b) => a.timestamp - b.timestamp)
+      setTimelineEvents(parsedEvents)
+    } catch (e) {
+      console.error('Failed to fetch events:', e)
+    }
+  }, [contractId])
+
   useEffect(() => {
     fetchContractState()
-  }, [fetchContractState])
+    fetchEvents()
+  }, [fetchContractState, fetchEvents])
 
   const handleCopyLink = async () => {
     if (!magicLinkUrl) return
@@ -217,7 +255,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
         attempts++
         await new Promise(r => setTimeout(r, 2000)) // Wait 2s between polls
         console.log(`[ContractView] Polling refresh attempt ${attempts}/${maxAttempts}`)
-        await fetchContractState(true)
+        await Promise.all([fetchContractState(true), fetchEvents()])
         poll()
       }
       poll()
@@ -629,6 +667,167 @@ export default function ContractView({ contractId }: ContractViewProps) {
                   </div>
                 )}
 
+              </div>
+            </motion.div>
+
+            {/* Card 2: Timeline */}
+            <motion.div className={styles.mainCardDark} variants={itemVariants} style={{ marginTop: '12px' }}>
+              <div className={styles.infoCardHeader}>
+                <span className={styles.infoCardTitle}>Contract Timeline</span>
+              </div>
+
+              <div className={styles.timelineContainerDark}>
+                {/* Step 1: Created (Default, since it's the contract deployment) */}
+                <div className={styles.timelineItemDark}>
+                  <div className={styles.timelineIconContainer}>
+                    <div className={styles.timelineIconGreenGradient}>
+                      <Plus className={styles.timelinePlusIcon} />
+                    </div>
+                  </div>
+                  <div className={styles.timelineContentDark}>
+                    <span className={styles.timelineEventTitleDark}>Escrow Created</span>
+                    <div className={styles.timelineDateRow}>
+                      <span className={styles.timelineDateDark}>{escrowState.deadline ? formatDate(escrowState.deadline - BigInt(30 * 24 * 60 * 60 * 1000)) : '...'}</span>
+                      <span className={styles.timelineTxHash}>#{contractId.slice(0, 12)}...</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 2: Deposit */}
+                {(() => {
+                  const event = timelineEvents.find(e => e.type === 'Accepted')
+                  const isActive = !!event || statusNum >= 1
+                  return (
+                    <div className={styles.timelineItemDark}>
+                      <div className={styles.timelineIconContainer}>
+                        <div className={isActive ? styles.timelineIconGreenGradient : styles.timelineIconBlueGradient}>
+                          <ArrowCircleDown className={styles.timelinePlusIcon} />
+                        </div>
+                      </div>
+                      <div className={styles.timelineContentDark}>
+                        <span className={styles.timelineEventTitleDark} style={!isActive ? { color: '#444' } : {}}>
+                          Deposit Confirmed
+                        </span>
+                        {event && event.timestamp && (
+                          <div className={styles.timelineDateRow}>
+                            <span className={styles.timelineDateDark}>{formatDate(event.timestamp)}</span>
+                            <span className={styles.timelineTxHash}>#{event.txId.slice(0, 8)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Step 3: Delivery */}
+                {(() => {
+                  const deliveryEvent = timelineEvents.find(e => e.type === 'Delivered')
+                  const disputeEvent = timelineEvents.find(e => e.type === 'Disputed')
+                  const disputeBeforeDelivery = disputeEvent && (!deliveryEvent || disputeEvent.timestamp < deliveryEvent.timestamp)
+
+                  // Skip delivery step if dispute happened before it or if in dispute without delivery
+                  if ((disputeBeforeDelivery && !deliveryEvent) || (statusNum === 3 && !deliveryEvent)) return null
+
+                  const isActive = !!deliveryEvent || statusNum >= 2
+                  return (
+                    <div className={styles.timelineItemDark}>
+                      <div className={styles.timelineIconContainer}>
+                        <div className={isActive ? styles.timelineIconGreenGradient : styles.timelineIconBlueGradient}>
+                          <PaperPlaneRight className={styles.timelinePlusIcon} />
+                        </div>
+                      </div>
+                      <div className={styles.timelineContentDark}>
+                        <span className={styles.timelineEventTitleDark} style={!isActive ? { color: '#444' } : {}}>
+                          Work Delivered
+                        </span>
+                        {deliveryEvent && deliveryEvent.timestamp && (
+                          <div className={styles.timelineDateRow}>
+                            <span className={styles.timelineDateDark}>{formatDate(deliveryEvent.timestamp)}</span>
+                            <span className={styles.timelineTxHash}>#{deliveryEvent.txId.slice(0, 8)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Optional Step: Dispute Opened */}
+                {(() => {
+                  const event = timelineEvents.find(e => e.type === 'Disputed')
+                  if (!event && statusNum !== 3) return null
+                  const isActive = !!event
+                  return (
+                    <div className={styles.timelineItemDark}>
+                      <div className={styles.timelineIconContainer}>
+                        <div className={isActive ? styles.timelineIconRedGradient || styles.timelineIconGreenGradient : styles.timelineIconBlueGradient}>
+                          <Warning className={styles.timelinePlusIcon} />
+                        </div>
+                      </div>
+                      <div className={styles.timelineContentDark}>
+                        <span className={styles.timelineEventTitleDark} style={!isActive ? { color: '#444' } : {}}>
+                          Dispute Opened
+                        </span>
+                        {event && event.timestamp && (
+                          <div className={styles.timelineDateRow}>
+                            <span className={styles.timelineDateDark}>{formatDate(event.timestamp)}</span>
+                            <span className={styles.timelineTxHash}>#{event.txId.slice(0, 8)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Optional Step: Arbiter Decision */}
+                {(() => {
+                  const event = timelineEvents.find(e => e.type === 'Resolved')
+                  if (!event) return null
+                  const isActive = true
+                  return (
+                    <div className={styles.timelineItemDark}>
+                      <div className={styles.timelineIconContainer}>
+                        <div className={styles.timelineIconGreenGradient}>
+                          <Gavel className={styles.timelinePlusIcon} />
+                        </div>
+                      </div>
+                      <div className={styles.timelineContentDark}>
+                        <span className={styles.timelineEventTitleDark}>
+                          Arbiter&apos;s Decision
+                        </span>
+                        <div className={styles.timelineDateRow}>
+                          <span className={styles.timelineDateDark}>{formatDate(event.timestamp)}</span>
+                          <span className={styles.timelineTxHash}>#{event.txId.slice(0, 8)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Step 4: Completion */}
+                {(() => {
+                  const event = timelineEvents.find(e => e.type === 'Released' || e.type === 'Resolved')
+                  const isActive = !!event || statusNum === 4
+                  return (
+                    <div className={styles.timelineItemDarkLast}>
+                      <div className={styles.timelineIconContainerLast}>
+                        <div className={isActive ? styles.timelineIconGreenGradient : styles.timelineIconBlueGradient}>
+                          <Check className={styles.timelinePlusIcon} weight="bold" />
+                        </div>
+                      </div>
+                      <div className={styles.timelineContentDark}>
+                        <span className={styles.timelineEventTitleDark} style={!isActive ? { color: '#444' } : {}}>
+                          Contract Completed
+                        </span>
+                        {event && event.timestamp && (
+                          <div className={styles.timelineDateRow}>
+                            <span className={styles.timelineDateDark}>{formatDate(event.timestamp)}</span>
+                            <span className={styles.timelineTxHash}>#{event.txId.slice(0, 8)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
             </motion.div>
           </motion.div>

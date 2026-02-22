@@ -257,6 +257,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #1A1A1A;
 }
 
 .stakeholdersListDark {
@@ -931,6 +932,17 @@
   align-items: center;
   justify-content: center;
   background: radial-gradient(ellipse 120.89% 120.89% at 82.81% 106.59%, #3BF683 0%, #47DE6F 17%, #BFED27 38%, #2EBD41 79%, #35E263 100%), #10B981;
+  flex-shrink: 0;
+}
+
+.timelineIconRedGradient {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse 120.89% 120.89% at 82.81% 106.59%, #F63B3B 0%, #EF4444 17%, #F87171 38%, #B91C1C 79%, #7F1D1D 100%);
   flex-shrink: 0;
 }
 
