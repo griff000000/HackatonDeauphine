@@ -429,7 +429,11 @@ export default function ContractView({ contractId }: ContractViewProps) {
                       <span className={styles.amountTitleDark}>Montant contrat + Caution Requise</span>
                       <div className={styles.alphBadgeDark}>
                         <div className={styles.alphIconOrange}>
-                           <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'white' }}>⋈</span>
+                           <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                             <path d="M2.07603 6.95709C2.07603 6.82033 1.96835 6.7283 1.83573 6.75168L0.240333 7.03295C0.107712 7.05633 3.05176e-05 7.18634 3.05176e-05 7.32308V10.3364C3.05176e-05 10.4731 0.107712 10.5651 0.240333 10.5418L1.83573 10.2605C1.96835 10.2371 2.07603 10.1071 2.07603 9.97035V6.95709Z" fill="white"/>
+                             <path d="M6.22789 0.209039C6.22789 0.0722941 6.12021 -0.0197484 5.98757 0.003628L4.39219 0.28491C4.25956 0.308286 4.15189 0.438292 4.15189 0.575048V3.58831C4.15189 3.72507 4.25956 3.8171 4.39219 3.79372L5.98757 3.51245C6.12021 3.48906 6.22789 3.35906 6.22789 3.22231V0.209039Z" fill="white"/>
+                             <path d="M2.3354 0.912601C2.2738 0.776942 2.10843 0.68715 1.96633 0.7122L0.256976 1.01357C0.114867 1.03862 0.0495148 1.16909 0.111109 1.30475L3.89162 9.63122C3.95322 9.76688 4.11859 9.85668 4.26069 9.83162L5.97004 9.53026C6.11214 9.50521 6.1775 9.37473 6.11591 9.23907L2.3354 0.912601Z" fill="white"/>
+                           </svg>
                         </div>
                         <span>ALPH</span>
                       </div>
@@ -451,7 +455,11 @@ export default function ContractView({ contractId }: ContractViewProps) {
                       <span className={styles.amountTitleDark}>Total Coffre</span>
                       <div className={styles.alphBadgeDark}>
                         <div className={styles.alphIconOrange}>
-                           <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'white' }}>⋈</span>
+                           <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                             <path d="M2.07603 6.95709C2.07603 6.82033 1.96835 6.7283 1.83573 6.75168L0.240333 7.03295C0.107712 7.05633 3.05176e-05 7.18634 3.05176e-05 7.32308V10.3364C3.05176e-05 10.4731 0.107712 10.5651 0.240333 10.5418L1.83573 10.2605C1.96835 10.2371 2.07603 10.1071 2.07603 9.97035V6.95709Z" fill="white"/>
+                             <path d="M6.22789 0.209039C6.22789 0.0722941 6.12021 -0.0197484 5.98757 0.003628L4.39219 0.28491C4.25956 0.308286 4.15189 0.438292 4.15189 0.575048V3.58831C4.15189 3.72507 4.25956 3.8171 4.39219 3.79372L5.98757 3.51245C6.12021 3.48906 6.22789 3.35906 6.22789 3.22231V0.209039Z" fill="white"/>
+                             <path d="M2.3354 0.912601C2.2738 0.776942 2.10843 0.68715 1.96633 0.7122L0.256976 1.01357C0.114867 1.03862 0.0495148 1.16909 0.111109 1.30475L3.89162 9.63122C3.95322 9.76688 4.11859 9.85668 4.26069 9.83162L5.97004 9.53026C6.11214 9.50521 6.1775 9.37473 6.11591 9.23907L2.3354 0.912601Z" fill="white"/>
+                           </svg>
                         </div>
                         <span>ALPH</span>
                       </div>

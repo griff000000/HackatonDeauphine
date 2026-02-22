@@ -10,6 +10,7 @@ import { Escrow, TrustRegistry } from 'my-contracts'
 import { getTrustRegistryAddress, getTrustRegistryId, ARBITER_ADDRESS } from '@/utils/alephium'
 import styles from '@/styles/CreateEscrow.module.css'
 import { staggerContainer, itemVariants } from '@/utils/animations'
+import { style } from 'framer-motion/client'
 
 const getDaysInMonth = (month: number, year: number) => {
   return new Date(year, month + 1, 0).getDate()
@@ -329,9 +330,13 @@ export default function CreateEscrow() {
                 <div className={styles.headerIcon}>
                   <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="16" cy="16" r="16" fill="url(#headerGrad)"/>
-                    <rect x="8" y="11" width="12" height="10" rx="2" stroke="white" strokeWidth="1.5"/>
-                    <path d="M20 14L24 11.5V20.5L20 18" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="14" cy="16" r="1.5" fill="white"/>
+                    <g transform="translate(4, 4)">
+                      <path d="M18 18.75V21" stroke="white" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M6 18.75V21" stroke="white" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M20.25 4.5H3.75C3.33579 4.5 3 4.83579 3 5.25V18C3 18.4142 3.33579 18.75 3.75 18.75H20.25C20.6642 18.75 21 18.4142 21 18V5.25C21 4.83579 20.6642 4.5 20.25 4.5Z" stroke="white" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M16.875 11.625H21" stroke="white" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M13.875 14.625C15.5319 14.625 16.875 13.2819 16.875 11.625C16.875 9.96815 15.5319 8.625 13.875 8.625C12.2181 8.625 10.875 9.96815 10.875 11.625C10.875 13.2819 12.2181 14.625 13.875 14.625Z" stroke="white" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round"/>
+                    </g>
                     <defs>
                       <linearGradient id="headerGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
                         <stop stopColor="#F97316"/>
@@ -412,9 +417,9 @@ export default function CreateEscrow() {
           >
             <motion.div
               className={styles.card}
-              initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -20, filter: "blur(12px)" }}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
               transition={{ type: "spring", stiffness: 120, damping: 20, delay: 0.15 }}
             >
               <div className={styles.formFields}>
@@ -436,9 +441,10 @@ export default function CreateEscrow() {
           <div className={styles.amountCard}>
             <div className={styles.tokenBadge}>
               <div className={styles.tokenIcon}>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="6" cy="6" r="5" fill="white" fillOpacity="0.2"/>
-                  <path d="M6 3V9M3 6H9" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+                <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2.07603 6.95709C2.07603 6.82033 1.96835 6.7283 1.83573 6.75168L0.240333 7.03295C0.107712 7.05633 3.05176e-05 7.18634 3.05176e-05 7.32308V10.3364C3.05176e-05 10.4731 0.107712 10.5651 0.240333 10.5418L1.83573 10.2605C1.96835 10.2371 2.07603 10.1071 2.07603 9.97035V6.95709Z" fill="white"/>
+                  <path d="M6.22789 0.209039C6.22789 0.0722941 6.12021 -0.0197484 5.98757 0.003628L4.39219 0.28491C4.25956 0.308286 4.15189 0.438292 4.15189 0.575048V3.58831C4.15189 3.72507 4.25956 3.8171 4.39219 3.79372L5.98757 3.51245C6.12021 3.48906 6.22789 3.35906 6.22789 3.22231V0.209039Z" fill="white"/>
+                  <path d="M2.3354 0.912601C2.2738 0.776942 2.10843 0.68715 1.96633 0.7122L0.256976 1.01357C0.114867 1.03862 0.0495148 1.16909 0.111109 1.30475L3.89162 9.63122C3.95322 9.76688 4.11859 9.85668 4.26069 9.83162L5.97004 9.53026C6.11214 9.50521 6.1775 9.37473 6.11591 9.23907L2.3354 0.912601Z" fill="white"/>
                 </svg>
               </div>
               <span className={styles.tokenName}>ALPH</span>
@@ -678,9 +684,10 @@ export default function CreateEscrow() {
                 onClick={show}
               >
                 Connect Wallet
-                <svg width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M0 0.5L5.5 7L0 13.5" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M4.5 0.5L10 7L4.5 13.5" stroke="currentColor" strokeWidth="1.5"/>
+                <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2.07603 6.95709C2.07603 6.82033 1.96835 6.7283 1.83573 6.75168L0.240333 7.03295C0.107712 7.05633 3.05176e-05 7.18634 3.05176e-05 7.32308V10.3364C3.05176e-05 10.4731 0.107712 10.5651 0.240333 10.5418L1.83573 10.2605C1.96835 10.2371 2.07603 10.1071 2.07603 9.97035V6.95709Z" fill="black"/>
+                  <path d="M6.22789 0.209039C6.22789 0.0722941 6.12021 -0.0197484 5.98757 0.003628L4.39219 0.28491C4.25956 0.308286 4.15189 0.438292 4.15189 0.575048V3.58831C4.15189 3.72507 4.25956 3.8171 4.39219 3.79372L5.98757 3.51245C6.12021 3.48906 6.22789 3.35906 6.22789 3.22231V0.209039Z" fill="black"/>
+                  <path d="M2.3354 0.912601C2.2738 0.776942 2.10843 0.68715 1.96633 0.7122L0.256976 1.01357C0.114867 1.03862 0.0495148 1.16909 0.111109 1.30475L3.89162 9.63122C3.95322 9.76688 4.11859 9.85668 4.26069 9.83162L5.97004 9.53026C6.11214 9.50521 6.1775 9.37473 6.11591 9.23907L2.3354 0.912601Z" fill="black"/>
                 </svg>
               </motion.button>
             )}
