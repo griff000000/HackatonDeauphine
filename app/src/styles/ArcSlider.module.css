@@ -1,0 +1,97 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+.svgWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 300 / 162;
+  margin-bottom: 12px;
+  padding: 10px 10px 0;
+  box-sizing: content-box;
+}
+
+
+
+.innerValueContainer {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.valueGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.valueText {
+  font-family: 'Inter', sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  color: #FFFFFF;
+  line-height: 32px;
+}
+
+.divider {
+  color: #888888;
+  font-family: 'Inter', sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 32px;
+}
+
+.labelsContainer {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  margin-top: 0px;
+}
+
+.labelGroup {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.labelGroupRight {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.labelText {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #E4E4E7;
+  line-height: 20px;
+}
+
+.clientGradientCircle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF5F4A 0%, #F6A83B 100%);
+}
+
+.freelanceGradientCircle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F63BE3 0%, #C827ED 100%);
+}

@@ -82,6 +82,27 @@
   opacity: 0.9;
 }
 
+.connectedButton {
+  background-color: var(--color-card);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  font-family: monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.connectedButton:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.connectedDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #4AEDC4;
+  flex-shrink: 0;
+}
+
 @media (max-width: 1200px) {
   .navbar {
     padding: var(--spacing-xsm) var(--spacing-sm);
@@ -92,4 +113,92 @@
   .navLinks {
     display: none;
   }
+}
+
+/* Disconnect Dialog */
+.dialogOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.dialogContent {
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+}
+
+.dialogHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dialogTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.dialogDescription {
+  font-size: 13px;
+  font-weight: 400;
+  color: #888;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.dialogFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.dialogBtnCancel {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #888;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dialogBtnCancel:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dialogBtnConfirm {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  background: #ef4444;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dialogBtnConfirm:hover {
+  background: #dc2626;
 }

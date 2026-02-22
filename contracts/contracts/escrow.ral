@@ -19,7 +19,7 @@ Contract Escrow(
     event PaymentReleased(to: Address, totalAmount: U256)
     event DisputeOpened(opener: Address, reason: ByteVec)
     event EvidenceSubmitted(submitter: Address, evidence: ByteVec)
-    event DisputeResolved(arbiter: Address, toFreelancer: Bool, justification: ByteVec)
+    event DisputeResolved(arbiter: Address, freelancerPercent: U256, justification: ByteVec)
     event EscrowCancelled(client: Address)
     event FreelancerRefunded(freelancer: Address)
 
@@ -31,6 +31,7 @@ Contract Escrow(
         OnlyClientOrFreelancer = 4
         AutoClaimTooEarly = 5
         EvidenceAlreadySubmitted = 6
+        InvalidPercent = 7
     }
 
     // Freelancer deposite sa caution et active l'escrow
@@ -99,26 +100,37 @@ Contract Escrow(
         emit EvidenceSubmitted(caller, evidence)
     }
 
-    // L'arbitre tranche le litige avec justification
+    // L'arbitre tranche le litige avec un pourcentage (0-100) pour le freelancer
     @using(assetsInContract = true, updateFields = true)
-    pub fn resolve(toFreelancer: Bool, justification: ByteVec) -> () {
+    pub fn resolve(freelancerPercent: U256, justification: ByteVec) -> () {
         assert!(status == 3, ErrorCodes.InvalidStatus)
         checkCaller!(callerAddress!() == arbiter, ErrorCodes.OnlyArbiter)
+        assert!(freelancerPercent <= 100, ErrorCodes.InvalidPercent)
 
         disputeJustification = justification
 
-        if (toFreelancer) {
-            let total = amount + collateral
-            transferTokenFromSelf!(freelancer, ALPH, total)
+        let total = amount + collateral
+        let freelancerShare = total * freelancerPercent / 100
+        let clientShare = total - freelancerShare
+
+        if (freelancerShare > 0) {
+            transferTokenFromSelf!(freelancer, ALPH, freelancerShare)
+        }
+        if (clientShare > 0) {
+            transferTokenFromSelf!(client, ALPH, clientShare)
+        }
+
+        // Trust score: >60% to freelancer = good, <40% = bad
+        if (freelancerPercent >= 60) {
             trustRegistry.increaseScore(freelancer, 2)
-        } else {
-            transferTokenFromSelf!(client, ALPH, amount)
-            transferTokenFromSelf!(freelancer, ALPH, collateral)
+        }
+        if (freelancerPercent <= 40) {
             trustRegistry.decreaseScore(freelancer, 15)
         }
+
         status = 4
 
-        emit DisputeResolved(arbiter, toFreelancer, justification)
+        emit DisputeResolved(arbiter, freelancerPercent, justification)
         destroySelf!(client)
     }
 
