@@ -5,12 +5,12 @@
   "fieldsSig": {
     "names": [
       "escrow",
-      "toFreelancer",
+      "freelancerPercent",
       "justification"
     ],
     "types": [
       "Escrow",
-      "Bool",
+      "U256",
       "ByteVec"
     ],
     "isMutable": [

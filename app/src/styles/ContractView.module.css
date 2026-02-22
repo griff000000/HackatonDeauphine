@@ -569,6 +569,94 @@
   opacity: 0.9;
 }
 
+.btnCancelWhite:disabled,
+.btnSuccess:disabled,
+.btnDanger:disabled,
+.btnWarning:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btnSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+.btnSuccess {
+  background: white;
+  color: #0a0a0a;
+  border: none;
+  border-radius: 1024px;
+  padding: 16px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  transition: all 0.25s ease;
+}
+
+.btnSuccess:hover {
+  background: linear-gradient(135deg, #4AEDC4, #34D399);
+  color: #0a0a0a;
+}
+
+.btnDanger {
+  background: white;
+  color: #0a0a0a;
+  border: none;
+  border-radius: 1024px;
+  padding: 16px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  transition: all 0.25s ease;
+}
+
+.btnDanger:hover {
+  background: #ef4444;
+  color: white;
+}
+
+.btnWarning {
+  background: white;
+  color: #0a0a0a;
+  border: none;
+  border-radius: 1024px;
+  padding: 16px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  transition: all 0.25s ease;
+}
+
+.btnWarning:hover {
+  background: #eab308;
+  color: #0a0a0a;
+}
+
 /* --- INFORMATIONS DU CONTRAT (DARK) --- */
 .infoCardDark {
   width: 100%;

@@ -18,8 +18,8 @@ TxScript SubmitEvidence(escrow: Escrow, evidence: ByteVec) {
     escrow.submitEvidence(evidence)
 }
 
-TxScript ResolveDispute(escrow: Escrow, toFreelancer: Bool, justification: ByteVec) {
-    escrow.resolve(toFreelancer, justification)
+TxScript ResolveDispute(escrow: Escrow, freelancerPercent: U256, justification: ByteVec) {
+    escrow.resolve(freelancerPercent, justification)
 }
 
 TxScript RefundByFreelancer(escrow: Escrow) {

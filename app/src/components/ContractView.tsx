@@ -22,9 +22,11 @@ import {
 } from '@phosphor-icons/react'
 import { useWallet } from '@alephium/web3-react'
 import { hexToString, ONE_ALPH, DUST_AMOUNT, stringToHex, binToHex, contractIdFromAddress } from '@alephium/web3'
+import { Escrow, TrustRegistry, AcceptAndDeposit, Deliver, ReleasePayment, OpenDispute, SubmitEvidence, ResolveDispute, RefundByFreelancer, CancelEscrow, ClaimAfterDeadline } from 'my-contracts'
 import { getTrustRegistryAddress } from '@/utils/alephium'
 import styles from '@/styles/ContractView.module.css'
 import Navbar from './Navbar'
+import Link from 'next/link'
 
 interface ContractViewProps {
   contractId: string;
@@ -72,7 +74,6 @@ export default function ContractView({ contractId }: ContractViewProps) {
   const { connectionStatus, signer, account } = useWallet()
   const isConnected = connectionStatus === 'connected'
 
-  const escrowContractId = binToHex(contractIdFromAddress(contractId))
 
   const [isCopied, setIsCopied] = useState(false)
   const [magicLinkUrl, setMagicLinkUrl] = useState('')
@@ -87,6 +88,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
   const [disputeReason, setDisputeReason] = useState('')
   const [evidenceText, setEvidenceText] = useState('')
   const [resolveJustification, setResolveJustification] = useState('')
+  const [showDisputeInput, setShowDisputeInput] = useState(false)
 
   const constraintsRef = useRef<HTMLDivElement>(null)
   const innerRef = useRef<HTMLDivElement>(null)
@@ -103,29 +105,56 @@ export default function ContractView({ contractId }: ContractViewProps) {
 
       console.log('[ContractView] Fetching contract at address:', contractId)
 
-      // Mock fetch
-      await new Promise(resolve => setTimeout(resolve, 800))
-      
+      const escrow = Escrow.at(contractId)
+      let retries = 3
+      let state: any = null
+      while (retries > 0) {
+        try {
+          state = await escrow.fetchState()
+          break
+        } catch (e) {
+          retries--
+          if (retries === 0) throw e
+          await new Promise(r => setTimeout(r, 1000))
+        }
+      }
+
+      const f = state.fields
+      const stripGroup = (addr: string) => addr.includes(':') ? addr.split(':')[0] : addr
+
       setEscrowState({
-        client: '1ClientMockAddress123',
-        freelancer: '1FreelancerMockAddress456',
-        arbiter: '1ArbiterMockAddress789',
-        amount: BigInt(Math.round(1500 * 1e18)), // 1500 ALPH
-        collateral: BigInt(Math.round(150 * 1e18)), // 150 ALPH
-        deadline: BigInt(Date.now() + 86400000 * 7), // 7 days from now
-        cdcHash: 'Design Mission Scope',
-        deliverableLink: '',
-        status: 0n,
-        disputeReason: '',
-        disputeEvidence: '',
-        disputeJustification: '',
+        client: stripGroup(f.client as string),
+        freelancer: stripGroup(f.freelancer as string),
+        arbiter: stripGroup(f.arbiter as string),
+        amount: f.amount as bigint,
+        collateral: f.collateral as bigint,
+        deadline: f.deadline as bigint,
+        cdcHash: hexToString(f.cdcHash as string),
+        deliverableLink: hexToString(f.deliverableLink as string),
+        status: f.status as bigint,
+        disputeReason: hexToString(f.disputeReason as string),
+        disputeEvidence: hexToString(f.disputeEvidence as string),
+        disputeJustification: hexToString(f.disputeJustification as string),
       })
 
-      setTrustScore(85n)
+      // Fetch trust score
+      try {
+        const registryAddress = getTrustRegistryAddress()
+        const registry = TrustRegistry.at(registryAddress)
+        const scoreResult = await registry.view.getScore({ args: { freelancer: f.freelancer as string } })
+        setTrustScore(scoreResult.returns)
+      } catch (e) {
+        console.warn('Could not fetch trust score:', e)
+        setTrustScore(50n)
+      }
 
     } catch (err: any) {
       console.error('Failed to fetch contract state:', err)
-      if (!isRefresh) setFetchError('Contrat introuvable ou erreur réseau.')
+      if (err?.message?.includes('not found') || err?.message?.includes('KeyNotFound')) {
+        if (!isRefresh) setFetchError('CONTRACT_COMPLETED')
+      } else {
+        if (!isRefresh) setFetchError('Contrat introuvable ou erreur réseau.')
+      }
     } finally {
       if (!isRefresh) setLoading(false)
     }
@@ -169,48 +198,76 @@ export default function ContractView({ contractId }: ContractViewProps) {
   }
 
   const handleCancel = () => executeAction(async () => {
-    console.log('[Mock] Cancel Escrow')
-    await new Promise(resolve => setTimeout(resolve, 500))
+    return await CancelEscrow.execute({
+      signer: signer!,
+      initialFields: { escrow: contractId },
+      attoAlphAmount: DUST_AMOUNT
+    })
   })
 
   const handleAcceptDeposit = () => executeAction(async () => {
-    console.log('[Mock] Accept Deposit')
-    await new Promise(resolve => setTimeout(resolve, 500))
+    if (!escrowState) return
+    return await AcceptAndDeposit.execute({
+      signer: signer!,
+      initialFields: { escrow: contractId, collateral: escrowState.collateral },
+      attoAlphAmount: escrowState.collateral + DUST_AMOUNT
+    })
   })
 
   const handleDeliver = () => executeAction(async () => {
-    console.log('[Mock] Deliver work')
-    await new Promise(resolve => setTimeout(resolve, 500))
+    return await Deliver.execute({
+      signer: signer!,
+      initialFields: { escrow: contractId, link: stringToHex(deliverLink) },
+      attoAlphAmount: DUST_AMOUNT
+    })
   })
 
   const handleRelease = () => executeAction(async () => {
-    console.log('[Mock] Release Payment')
-    await new Promise(resolve => setTimeout(resolve, 500))
+    return await ReleasePayment.execute({
+      signer: signer!,
+      initialFields: { escrow: contractId },
+      attoAlphAmount: DUST_AMOUNT
+    })
   })
 
   const handleDispute = () => executeAction(async () => {
-    console.log('[Mock] Open Dispute')
-    await new Promise(resolve => setTimeout(resolve, 500))
+    return await OpenDispute.execute({
+      signer: signer!,
+      initialFields: { escrow: contractId, reason: stringToHex(disputeReason) },
+      attoAlphAmount: DUST_AMOUNT
+    })
   })
 
   const handleSubmitEvidence = () => executeAction(async () => {
-    console.log('[Mock] Submit Evidence')
-    await new Promise(resolve => setTimeout(resolve, 500))
+    return await SubmitEvidence.execute({
+      signer: signer!,
+      initialFields: { escrow: contractId, evidence: stringToHex(evidenceText) },
+      attoAlphAmount: DUST_AMOUNT
+    })
   })
 
-  const handleResolve = (toFreelancer: boolean) => executeAction(async () => {
-    console.log('[Mock] Resolve Dispute, toFreelancer:', toFreelancer)
-    await new Promise(resolve => setTimeout(resolve, 500))
+  const handleResolve = (freelancerPercent: bigint) => executeAction(async () => {
+    return await ResolveDispute.execute({
+      signer: signer!,
+      initialFields: { escrow: contractId, freelancerPercent, justification: stringToHex(resolveJustification) },
+      attoAlphAmount: DUST_AMOUNT
+    })
   })
 
   const handleRefund = () => executeAction(async () => {
-    console.log('[Mock] Refund')
-    await new Promise(resolve => setTimeout(resolve, 500))
+    return await RefundByFreelancer.execute({
+      signer: signer!,
+      initialFields: { escrow: contractId },
+      attoAlphAmount: DUST_AMOUNT
+    })
   })
 
   const handleAutoClaim = () => executeAction(async () => {
-    console.log('[Mock] Auto Claim')
-    await new Promise(resolve => setTimeout(resolve, 500))
+    return await ClaimAfterDeadline.execute({
+      signer: signer!,
+      initialFields: { escrow: contractId },
+      attoAlphAmount: DUST_AMOUNT
+    })
   })
 
   const staggerContainer = {
@@ -587,8 +644,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     onClick={handleCancel}
                     disabled={actionLoading}
                   >
-                    <XCircle size={18} weight="bold" color="black" />
-                    {actionLoading ? 'En cours...' : 'Annuler & Récupérer'}
+                    {actionLoading ? <><span className={styles.btnSpinner} /> Annulation...</> : <><XCircle size={18} weight="bold" color="black" /> Annuler & Récupérer</>}
                   </button>
                 )}
 
@@ -598,8 +654,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     onClick={handleAcceptDeposit}
                     disabled={actionLoading}
                   >
-                    <Check size={18} weight="bold" color="black" />
-                    {actionLoading ? 'En cours...' : `Accepter & Déposer ${formatAlph(escrowState.collateral)} ALPH`}
+                    {actionLoading ? <><span className={styles.btnSpinner} /> Dépôt...</> : <><Check size={18} weight="bold" color="black" /> {`Accepter & Déposer ${formatAlph(escrowState.collateral)} ALPH`}</>}
                   </button>
                 )}
 
@@ -614,57 +669,87 @@ export default function ContractView({ contractId }: ContractViewProps) {
                         style={{ flex: 1, background: '#212121', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '8px 12px', color: 'white', fontSize: '12px' }}
                       />
                     </div>
-                    <button
-                      className={`${styles.btnCancelWhite} gradient-hover-btn`}
-                      onClick={handleDeliver}
-                      disabled={actionLoading || !deliverLink.trim()}
-                    >
-                      <PaperPlaneRight size={18} weight="bold" color="black" />
-                      {actionLoading ? 'En cours...' : 'Soumettre le travail'}
-                    </button>
-                    <button
-                      className={`${styles.btnCancelWhite} gradient-hover-btn`}
-                      onClick={handleRefund}
-                      disabled={actionLoading}
-                      style={{ opacity: 0.7 }}
-                    >
-                      <ArrowCounterClockwise size={18} weight="bold" color="black" />
-                      {actionLoading ? 'En cours...' : 'Abandonner la mission'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        className={styles.btnSuccess}
+                        onClick={handleDeliver}
+                        disabled={actionLoading || !deliverLink.trim()}
+                        style={{ flex: 1 }}
+                      >
+                        {actionLoading ? <><span className={styles.btnSpinner} /> Envoi...</> : <><PaperPlaneRight size={18} weight="bold" color="#0a0a0a" /> Soumettre</>}
+                      </button>
+                      <button
+                        className={styles.btnDanger}
+                        onClick={handleRefund}
+                        disabled={actionLoading}
+                        style={{ flex: 1 }}
+                      >
+                        {actionLoading ? <><span className={styles.btnSpinner} /> Annulation...</> : <><ArrowCounterClockwise size={18} weight="bold" color="#0a0a0a" /> Abandonner</>}
+                      </button>
+                    </div>
                   </>
                 )}
 
                 {(statusNum === 1 || statusNum === 2) && (isClient || isFreelancer) && (
                   <>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <input
-                        type="text"
-                        placeholder="Raison du litige..."
-                        value={disputeReason}
-                        onChange={(e) => setDisputeReason(e.target.value)}
-                        style={{ flex: 1, background: '#212121', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '8px 12px', color: 'white', fontSize: '12px' }}
-                      />
-                    </div>
-                    <button
-                      className={`${styles.btnCancelWhite} gradient-hover-btn`}
-                      onClick={handleDispute}
-                      disabled={actionLoading || !disputeReason.trim()}
-                      style={{ opacity: 0.7 }}
-                    >
-                      <Warning size={18} weight="bold" color="black" />
-                      {actionLoading ? 'En cours...' : 'Ouvrir un litige'}
-                    </button>
+                    {!showDisputeInput ? (
+                      <button
+                        className={styles.btnWarning}
+                        onClick={() => setShowDisputeInput(true)}
+                      >
+                        <Warning size={18} weight="bold" color="#0a0a0a" />
+                        Ouvrir un litige
+                      </button>
+                    ) : (
+                      <>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input
+                            type="text"
+                            placeholder="Raison du litige..."
+                            value={disputeReason}
+                            onChange={(e) => setDisputeReason(e.target.value)}
+                            style={{ flex: 1, background: '#212121', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '8px 12px', color: 'white', fontSize: '12px' }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <button
+                            className={styles.btnWarning}
+                            onClick={handleDispute}
+                            disabled={actionLoading || !disputeReason.trim()}
+                            style={{ flex: 1 }}
+                          >
+                            {actionLoading ? <><span className={styles.btnSpinner} /> Envoi...</> : <><Warning size={16} weight="bold" color="#0a0a0a" /> Confirmer le litige</>}
+                          </button>
+                          <button
+                            onClick={() => { setShowDisputeInput(false); setDisputeReason(''); }}
+                            style={{
+                              width: '44px',
+                              height: '44px',
+                              borderRadius: '50%',
+                              border: '1px solid rgba(255,255,255,0.12)',
+                              background: 'rgba(255,255,255,0.06)',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                            }}
+                          >
+                            <XCircle size={18} weight="bold" color="#888" />
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
 
                 {statusNum === 2 && isClient && (
                   <button
-                    className={`${styles.btnCancelWhite} gradient-hover-btn`}
+                    className={styles.btnSuccess}
                     onClick={handleRelease}
                     disabled={actionLoading}
                   >
-                    <Check size={18} weight="bold" color="black" />
-                    {actionLoading ? 'En cours...' : 'Valider & Libérer les fonds'}
+                    {actionLoading ? <><span className={styles.btnSpinner} /> Validation...</> : <><Check size={18} weight="bold" color="#0a0a0a" /> Valider & Libérer les fonds</>}
                   </button>
                 )}
 
@@ -675,8 +760,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     disabled={actionLoading}
                     style={{ opacity: 0.7 }}
                   >
-                    <Timer size={18} weight="bold" color="black" />
-                    {actionLoading ? 'En cours...' : 'Auto-claim (après deadline + 48h)'}
+                    {actionLoading ? <><span className={styles.btnSpinner} /> Réclamation...</> : <><Timer size={18} weight="bold" color="black" /> Auto-claim (après deadline + 48h)</>}
                   </button>
                 )}
 
@@ -696,44 +780,21 @@ export default function ContractView({ contractId }: ContractViewProps) {
                       onClick={handleSubmitEvidence}
                       disabled={actionLoading || !evidenceText.trim()}
                     >
-                      <PaperPlaneRight size={18} weight="bold" color="black" />
-                      {actionLoading ? 'En cours...' : 'Soumettre la preuve'}
+                      {actionLoading ? <><span className={styles.btnSpinner} /> Envoi...</> : <><PaperPlaneRight size={18} weight="bold" color="black" /> Soumettre la preuve</>}
                     </button>
                   </>
                 )}
 
-                {statusNum === 3 && isArbiter && (
-                  <>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <input
-                        type="text"
-                        placeholder="Justification de la décision..."
-                        value={resolveJustification}
-                        onChange={(e) => setResolveJustification(e.target.value)}
-                        style={{ flex: 1, background: '#212121', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '8px 12px', color: 'white', fontSize: '12px' }}
-                      />
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        className={`${styles.btnCancelWhite} gradient-hover-btn`}
-                        onClick={() => handleResolve(true)}
-                        disabled={actionLoading || !resolveJustification.trim()}
-                        style={{ flex: 1 }}
-                      >
-                        <Gavel size={18} weight="bold" color="black" />
-                        {actionLoading ? '...' : 'En faveur du freelancer'}
-                      </button>
-                      <button
-                        className={`${styles.btnCancelWhite} gradient-hover-btn`}
-                        onClick={() => handleResolve(false)}
-                        disabled={actionLoading || !resolveJustification.trim()}
-                        style={{ flex: 1 }}
-                      >
-                        <Gavel size={18} weight="bold" color="black" />
-                        {actionLoading ? '...' : 'En faveur du client'}
-                      </button>
-                    </div>
-                  </>
+                {statusNum === 3 && (
+                  <Link href={`/contract/${contractId}/arbitration`}>
+                    <button
+                      className={`${styles.btnCancelWhite} gradient-hover-btn`}
+                      style={{ width: '100%', marginTop: '4px' }}
+                    >
+                      <Gavel size={18} weight="bold" color="black" />
+                      Voir la page d'arbitrage
+                    </button>
+                  </Link>
                 )}
 
                 {statusNum === 4 && (

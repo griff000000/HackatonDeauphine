@@ -59,7 +59,7 @@ export const ReleasePayment = new ExecutableScript<{ escrow: HexString }>(
 
 export const ResolveDispute = new ExecutableScript<{
   escrow: HexString;
-  toFreelancer: boolean;
+  freelancerPercent: bigint;
   justification: HexString;
 }>(Script.fromJson(ResolveDisputeScriptJson, "", []), getContractByCodeHash);
 

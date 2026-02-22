@@ -6,7 +6,8 @@ import { UploadSimple, FilePdf, FileImage, FileDoc, File as FileIcon, X, LockSim
 import { useRouter } from 'next/navigation'
 import { useWallet } from '@alephium/web3-react'
 import { ONE_ALPH, DUST_AMOUNT, stringToHex, addressFromContractId } from '@alephium/web3'
-import { getTrustRegistryAddress, getTrustRegistryId } from '@/utils/alephium'
+import { Escrow, TrustRegistry } from 'my-contracts'
+import { getTrustRegistryAddress, getTrustRegistryId, ARBITER_ADDRESS } from '@/utils/alephium'
 import styles from '@/styles/CreateEscrow.module.css'
 import { staggerContainer, itemVariants } from '@/utils/animations'
 
@@ -214,18 +215,84 @@ export default function CreateEscrow() {
     setTxError(null)
 
     try {
-      // Mocking contract deployment for the frontend UI demo
-      console.log('[1] Simulating contract deployment...')
-      
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      const mockContractId = 'mock-escrow-id-' + Math.random().toString(36).substring(7)
-      const mockContractAddress = '1ContractAddressMockedForDemo' + Math.random().toString(36).substring(7)
-      
-      console.log('[2] Mock Deployment complete:', mockContractId)
+      const deadlineDate = new Date(currentDate.year, currentDate.month, selectedDay, 23, 59, 59)
+      const deadlineTimestamp = BigInt(deadlineDate.getTime())
 
-      setDeployedContractId(mockContractId)
-      setDeployedContractAddress(mockContractAddress)
+      const amountAtto = BigInt(Math.round(numericAmount * 1e18))
+
+      const registryAddress = getTrustRegistryAddress()
+      console.log('[1] TrustRegistry address:', registryAddress)
+      const registryInstance = TrustRegistry.at(registryAddress)
+      console.log('[2] Calling calculateCollateral...')
+      const collateralResult = await registryInstance.view.calculateCollateral({
+        args: {
+          baseCollateral: amountAtto,
+          freelancer: recipientAddress
+        }
+      })
+      const collateralAtto = collateralResult.returns
+      console.log('[3] Collateral:', collateralAtto.toString())
+
+      const cdcHash = stringToHex(ipfsHash || projectName)
+
+      const arbiterAddress = ARBITER_ADDRESS
+
+      const trustRegistryId = getTrustRegistryId()
+      console.log('[4] TrustRegistry ID:', trustRegistryId)
+
+      const deployParams = {
+        initialFields: {
+          client: account.address,
+          freelancer: recipientAddress,
+          arbiter: arbiterAddress,
+          amount: amountAtto,
+          collateral: collateralAtto,
+          deadline: deadlineTimestamp,
+          cdcHash: cdcHash,
+          trustRegistry: trustRegistryId,
+          deliverableLink: stringToHex(''),
+          status: 0n,
+          disputeReason: stringToHex(''),
+          disputeEvidence: stringToHex(''),
+          disputeJustification: stringToHex('')
+        },
+        initialAttoAlphAmount: amountAtto + ONE_ALPH
+      }
+      console.log('[5] Building tx params...')
+      const txParams = await Escrow.contract.txParamsForDeployment(signer, deployParams, 0)
+      console.log('[6] Tx params built, signing...')
+      const deployResult = await signer.signAndSubmitDeployContractTx(txParams)
+      console.log('[7] Deploy result:', JSON.stringify(deployResult, null, 2))
+
+      let contractAddress = ''
+      let contractId = ''
+
+      if (Array.isArray(deployResult)) {
+        // Groupless wallet: array of [{type:"TRANSFER",result:...}, {type:"DEPLOY_CONTRACT",result:{contractAddress, contractId}}]
+        const deployEntry = deployResult.find((e: any) => e.type === 'DEPLOY_CONTRACT')
+        if (!deployEntry) throw new Error('No DEPLOY_CONTRACT entry in result array')
+        contractAddress = deployEntry.result?.contractAddress || ''
+        contractId = deployEntry.result?.contractId || ''
+      } else {
+        // Standard wallet: direct object with contractAddress, contractId
+        contractAddress = (deployResult as any).contractAddress || ''
+        contractId = (deployResult as any).contractId || ''
+      }
+
+      // Fallback: derive address from contractId if needed
+      if (!contractAddress && contractId) {
+        contractAddress = addressFromContractId(contractId)
+      }
+
+      console.log('[8] Contract ID:', contractId)
+      console.log('[9] Contract Address:', contractAddress)
+
+      if (!contractAddress) {
+        throw new Error('Could not extract contract address from deploy result')
+      }
+
+      setDeployedContractId(contractId)
+      setDeployedContractAddress(contractAddress)
       setStatus('success')
     } catch (err: any) {
       console.error('Deploy escrow failed:', err)

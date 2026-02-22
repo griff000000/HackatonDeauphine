@@ -6,6 +6,7 @@ import { X, Hash, Check, Copy, CurrencyDollar, LockSimple, ArrowRight, User } fr
 import { useWallet } from '@alephium/web3-react'
 import { AlephiumConnectButton } from '@alephium/web3-react'
 import { hexToString } from '@alephium/web3'
+import { Escrow } from 'my-contracts'
 import styles from '@/styles/MagicLinkModal.module.css'
 
 interface MagicLinkModalProps {
@@ -48,16 +49,16 @@ export default function MagicLinkModal({ contractId, onClose }: MagicLinkModalPr
   const fetchContract = useCallback(async () => {
     try {
       setLoading(true)
-      // Mocking for frontend demo
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
+      const escrow = Escrow.at(contractId)
+      const state = await escrow.fetchState()
+      const f = state.fields
       setContractData({
-        projectName: "Mock Escrow Project",
-        amount: "100",
-        collateral: "10",
-        client: "1ClientAddressMock...",
-        freelancer: "1FreelancerAddressMock...",
-        status: 0,
+        projectName: hexToString(f.cdcHash as string),
+        amount: formatAlph(f.amount as bigint),
+        collateral: formatAlph(f.collateral as bigint),
+        client: f.client as string,
+        freelancer: f.freelancer as string,
+        status: Number(f.status as bigint),
       })
     } catch (err) {
       console.error('Failed to fetch contract for modal:', err)

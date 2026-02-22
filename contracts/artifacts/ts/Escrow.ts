@@ -78,7 +78,7 @@ export namespace EscrowTypes {
   }>;
   export type DisputeResolvedEvent = ContractEvent<{
     arbiter: Address;
-    toFreelancer: boolean;
+    freelancerPercent: bigint;
     justification: HexString;
   }>;
   export type EscrowCancelledEvent = ContractEvent<{ client: Address }>;
@@ -107,7 +107,7 @@ export namespace EscrowTypes {
     };
     resolve: {
       params: CallContractParams<{
-        toFreelancer: boolean;
+        freelancerPercent: bigint;
         justification: HexString;
       }>;
       result: CallContractResult<null>;
@@ -188,7 +188,7 @@ export namespace EscrowTypes {
     };
     resolve: {
       params: SignExecuteContractMethodParams<{
-        toFreelancer: boolean;
+        freelancerPercent: bigint;
         justification: HexString;
       }>;
       result: SignExecuteScriptTxResult;
@@ -264,6 +264,7 @@ class Factory extends ContractFactory<EscrowInstance, EscrowTypes.Fields> {
       OnlyClientOrFreelancer: BigInt("4"),
       AutoClaimTooEarly: BigInt("5"),
       EvidenceAlreadySubmitted: BigInt("6"),
+      InvalidPercent: BigInt("7"),
     },
   };
 
@@ -320,7 +321,7 @@ class Factory extends ContractFactory<EscrowInstance, EscrowTypes.Fields> {
     resolve: async (
       params: TestContractParamsWithoutMaps<
         EscrowTypes.Fields,
-        { toFreelancer: boolean; justification: HexString }
+        { freelancerPercent: bigint; justification: HexString }
       >
     ): Promise<TestContractResultWithoutMaps<null>> => {
       return testMethod(this, "resolve", params, getContractByCodeHash);
@@ -438,7 +439,7 @@ export const Escrow = new Factory(
   Contract.fromJson(
     EscrowContractJson,
     "",
-    "d99ba2dd8bc4af3c87d8775f4fe4e0cf3897bd57ce3dd14e0552a991cec8d632",
+    "65557a98ce1ae17717f6dc781f35aefa899fbbe4e92f758f70c1dcdf9a1be965",
     []
   )
 );
