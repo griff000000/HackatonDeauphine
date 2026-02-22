@@ -6,16 +6,13 @@
   overflow: hidden;
 }
 
-.backgroundImage {
+.backgroundVideo {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  background-image: url('/bg.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  filter: blur(8px);
+  object-fit: cover;
+  filter: blur(10px);
   transform: scale(1.05);
   pointer-events: none;
   z-index: 0;

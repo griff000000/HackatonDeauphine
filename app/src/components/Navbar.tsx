@@ -69,6 +69,8 @@ export default function Navbar({ userRole = 'visitor' }: NavbarProps) {
           </div>
           <div className={styles.navLinks}>
             <a href="/" className={styles.navLink} style={{ textDecoration: 'none' }}>New escrow</a>
+            <a href="#" className={styles.navLink} style={{ textDecoration: 'none' }}>Overview</a>
+            <a href="#" className={styles.navLink} style={{ textDecoration: 'none' }}>Resources</a>
           </div>
         </div>
         <div className={styles.right}>
