@@ -10,13 +10,106 @@
   <strong>Trustless escrow for freelancers. Zero commission. Zero risk. Built on Alephium.</strong>
 </p>
 
+---
+
+## Demo
+
+▶️ [**Watch the full demo on Loom**](https://www.loom.com/share/a1644ce44dc8466bb1ea11b79bc2f71d)
+
+<p align="center">
+  <img src="app/public/screen1.png" alt="Trove - Screen 1" width="700">
+</p>
+
+<p align="center">
+  <img src="app/public/screen2.png" alt="Trove - Screen 2" width="700">
+</p>
+
+---
+
+## The Problem
+
 1.57 billion freelancers worldwide. Most have no contract, no protection, no recourse. Just blind trust.
 
-The alternatives? Platforms like Upwork take 10–20% on every gig — that's $5,000–$10,000/year gone for a freelancer billing $50k. Or you go direct: you deliver, you invoice, you wait. And wait. The client ghosts. Your 80 hours of work? A gift.
+A company in Berlin finds a developer in Lagos. He's the right person for the job. But sending $5,000 in crypto to a stranger on the other side of the world? Nobody signs that wire. So they go through a platform — Upwork, Malt, Fiverr — and hand over 10–20% on every single transaction. For a freelancer billing $50k/year, that's $5,000–$10,000 gone. Every year. Not for a better service. Just for the illusion of safety.
 
-Too expensive, or too risky. There's nothing in between.
+And the freelancer who skips the platform? He delivers. He sends his invoice. He waits. One week. Two weeks. He follows up. No response. The client disappears. 80 hours of work — a gift.
 
-**Trove is the in-between.** A smart contract locks both parties' money. The code releases it when the work is done. No middleman. No commission. No trust required.
+**Too expensive, or too dangerous. There's nothing in between.**
+
+## The Solution
+
+**Trove is the in-between.**
+
+A peer-to-peer escrow protocol where the client locks their payment, the freelancer locks a bond, and a smart contract enforces fairness. No middleman. No commission. No trust required. Just code that verifies proof.
+
+When the work is delivered and validated, everything is released in a **single atomic transaction** — payment + bond go to the freelancer. One click. Done. And if things go wrong? An on-chain arbiter reviews the evidence and splits funds by percentage. Every decision is transparent, immutable, and auditable.
+
+**No one is ever stuck:**
+
+| Situation | What happens |
+|-----------|-------------|
+| Client validates | Freelancer gets payment + bond. Trust score increases. |
+| Client disappears | Auto-claim after 48h past deadline. Freelancer gets everything. |
+| Client cancels early | Full refund before freelancer accepts. No penalty. |
+| Freelancer abandons | Client refunded. Freelancer gets bond back. Score decreases. |
+| Dispute | Arbiter splits funds 0–100% with on-chain justification. |
+
+---
+
+## On-chain Reputation: Your Work Is Your Capital
+
+Today, to be credible as a freelancer, you give 15% of your income to a platform. On Trove, **you build your own credibility. And nobody can take it away.**
+
+The TrustRegistry contract stores every freelancer's trust score on-chain (0–100, starting at 50). The bond decreases as the score increases:
+
+| Score | Bond | What it means |
+|-------|------|---------------|
+| 50 (new) | 50% of base | First gig. Unknown track record. |
+| 70 | 30% | Proven. Several successful deliveries. |
+| 90+ | 10% (floor) | Veteran. Minimal bond, maximum trust. |
+
+Formula: `bond = baseCollateral * max(10, 100 - score) / 100`
+
+A new freelancer deposits a full bond. After 5 missions, it drops. After 20, it's almost symbolic. They didn't send a resume. They didn't beg a platform to verify them. They just did the work — and the blockchain remembered.
+
+This isn't a profile with stars that a platform can delete. It's a **portable, permanent, on-chain asset**. Your reputation becomes your capital.
+
+---
+
+## Why Alephium — And Why This Couldn't Exist Anywhere Else
+
+We didn't pick Alephium by accident. **We needed it.**
+
+| | Ethereum | Alephium |
+|---|---|---|
+| **Model** | Account-based. All contracts share global state. | **sUTXO**. Each escrow is an isolated UTXO with its own state. |
+| **Isolation** | One bug can contaminate other contracts. Like every vault in a bank sharing the same lock. | Each vault has its own lock, its own key. **Mathematically isolated.** |
+| **Atomicity** | Multi-step transactions. Intermediate states. Race conditions. | Multiple inputs → one output → one transaction. **All or nothing.** |
+| **Security** | Reentrancy. Unlimited token approvals. Flashloans. | **Impossible by design.** The Asset Permission System eliminates these attack vectors at the VM level. |
+| **Energy** | PoW / PoS | Proof of Less Work. **87% less energy** than classic PoW. |
+
+Alephium's sUTXO model lets us build **Smart-UTXOs** — assets that carry their own release conditions. The escrow contract IS the vault. Not a pointer to a balance in a global ledger. The actual funds, locked, with code that defines exactly when and how they move.
+
+The atomic multi-party exchange at the heart of Trove — client payment + freelancer bond consumed and redistributed in a single transaction — is the kind of operation that's fragile on account-based chains and **native on Alephium**. No intermediate state. No front-running. If any condition fails, nothing moves. This is the sUTXO model doing exactly what it was designed to do.
+
+In a world where blockchains are under regulatory pressure for their environmental impact, Trove runs on infrastructure that was built to be sustainable from day one. Same security as traditional PoW, 87% less energy. We don't ask freelancers to choose between decentralization and the planet.
+
+**This is the level of security that freelancers deserve.**
+
+---
+
+## The Vision
+
+Most hackathon escrow projects are simple token swaps. Button A, button B, swap. We built something different.
+
+Trove is not a payment tool. It's **the trust layer for the future of work.** A protocol where:
+
+- Any freelancer, anywhere, can work with any company, anywhere — without intermediaries, without permission, without fear.
+- Reputation is earned on-chain, not rented from a platform. It's portable, permanent, and incensurable.
+- Every completed mission makes the next one easier. Your history IS your credibility.
+- Disputes are resolved transparently, on-chain, with verifiable evidence — not by someone behind a desk you'll never see.
+
+We didn't just build a demo. We built the infrastructure for trustless collaboration at global scale. And we built it on the only chain where it could exist exactly as it should.
 
 ---
 
@@ -40,56 +133,6 @@ Client                        Freelancer                      Arbiter
   |   Trust score +5             |                               |
   |   Next bond reduced          |                               |
 ```
-
-The client deposits payment. The freelancer deposits a bond. Both are locked in a smart contract that **neither party controls**. When the client validates the work, everything is released in a **single atomic transaction** — payment + bond go to the freelancer. One click. One transaction. Zero risk of partial execution.
-
-If there's a dispute, an on-chain arbiter reviews the evidence (specs, deliverables, messages — all stored on IPFS) and redistributes funds by percentage. Every decision is recorded on-chain. Transparent. Immutable. Auditable.
-
-**No scenario leaves anyone stuck:**
-
-| Situation | What happens |
-|-----------|-------------|
-| Client validates | Freelancer gets payment + bond. Score +5. |
-| Client disappears | Auto-claim after 48h past deadline. Freelancer gets everything. |
-| Client cancels early | Full refund before freelancer accepts. No penalty. |
-| Freelancer abandons | Client refunded. Freelancer gets bond back. Score -3. |
-| Dispute | Arbiter splits funds 0–100% with on-chain justification. |
-
----
-
-## On-chain Reputation
-
-Today, to be credible as a freelancer, you give 15% of your income to a platform. On Trove, **you build your own credibility. And nobody can take it away.**
-
-The TrustRegistry contract stores every freelancer's trust score on-chain (0–100, starting at 50). The bond decreases as the score increases:
-
-| Score | Bond | What it means |
-|-------|------|---------------|
-| 50 (new) | 50% of base | First gig. Unknown track record. |
-| 70 | 30% | Proven. Several successful deliveries. |
-| 90+ | 10% (floor) | Veteran. Minimal bond, maximum trust. |
-
-Formula: `bond = baseCollateral * max(10, 100 - score) / 100`
-
-A new freelancer deposits a full bond. After 5 missions, it drops. After 20, it's almost symbolic. They didn't send a resume. They didn't beg a platform to verify them. They just did the work — and the blockchain remembered.
-
----
-
-## Why Alephium
-
-We didn't pick Alephium by accident.
-
-| | Ethereum | Alephium |
-|---|---|---|
-| **Model** | Account-based. All contracts share global state. | **sUTXO**. Each escrow is an isolated UTXO with its own state. |
-| **Isolation** | One bug can contaminate other contracts. Like all bank vaults sharing one lock. | Each vault has its own lock, its own key. Mathematically isolated. |
-| **Atomicity** | Multi-step transactions. Intermediate states. Race conditions. | Multiple inputs → one output → one transaction. **All or nothing.** |
-| **Security** | Reentrancy. Unlimited token approvals. Flashloans. | **Impossible by design.** The Asset Permission System eliminates these attack vectors at the VM level. |
-| **Energy** | PoW / PoS | Proof of Less Work. **87% less energy** than classic PoW. |
-
-Alephium's sUTXO model lets us build **Smart-UTXOs** — assets that carry their own release conditions. The escrow contract IS the vault. Not a pointer to a balance in a global ledger. The actual funds, locked, with code that defines exactly when and how they move.
-
-This is the level of security that freelancers deserve.
 
 ---
 
