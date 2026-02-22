@@ -79,7 +79,8 @@ export default function ContractView({ contractId }: ContractViewProps) {
   const [magicLinkUrl, setMagicLinkUrl] = useState('')
   const [escrowState, setEscrowState] = useState<EscrowState | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [trustScore, setTrustScore] = useState<bigint | null>(null)
 
@@ -96,29 +97,15 @@ export default function ContractView({ contractId }: ContractViewProps) {
     setMagicLinkUrl(typeof window !== 'undefined' ? window.location.href : '')
   }, [])
 
-  const fetchContractState = useCallback(async () => {
+  const fetchContractState = useCallback(async (isRefresh = false) => {
     try {
-      setLoading(true)
-      setError(null)
+      if (!isRefresh) setLoading(true)
+      setFetchError(null)
 
       console.log('[ContractView] Fetching contract at address:', contractId)
 
-      let state: any = null
-      let lastErr: any = null
-      for (let attempt = 0; attempt < 5; attempt++) {
-        try {
-          const escrowInstance = Escrow.at(contractId)
-          state = await escrowInstance.fetchState()
-          break
-        } catch (e: any) {
-          lastErr = e
-          console.warn(`[ContractView] Attempt ${attempt + 1}/5 failed:`, e?.message)
-          if (attempt < 4) await new Promise(r => setTimeout(r, 2000))
-        }
-      }
-      if (!state) {
-        throw lastErr || new Error('Failed to fetch contract state after retries')
-      }
+      const escrowInstance = Escrow.at(contractId)
+      const state = await escrowInstance.fetchState()
 
       console.log('[ContractView] Contract state fetched:', state.fields)
 
@@ -148,9 +135,9 @@ export default function ContractView({ contractId }: ContractViewProps) {
 
     } catch (err: any) {
       console.error('Failed to fetch contract state:', err)
-      setError('Contrat introuvable ou erreur réseau.')
+      if (!isRefresh) setFetchError('Contrat introuvable ou erreur réseau.')
     } finally {
-      setLoading(false)
+      if (!isRefresh) setLoading(false)
     }
   }, [contractId])
 
@@ -172,20 +159,20 @@ export default function ContractView({ contractId }: ContractViewProps) {
   const executeAction = async (action: () => Promise<any>) => {
     if (!signer) return
     setActionLoading(true)
-    setError(null)
+    setActionError(null)
     try {
       const result = await action()
       console.log('Action successful:', result)
       if (result && typeof result === 'object' && 'txId' in result) {
         console.log('Transaction ID:', result.txId)
       }
-      setError(null)
-      setTimeout(fetchContractState, 3000)
+      setTimeout(() => fetchContractState(true), 3000)
     } catch (err: any) {
       console.error('Action failed (full):', JSON.stringify(err, null, 2))
       console.error('Action failed (raw):', err)
       const msg = err?.message || (typeof err === 'object' ? JSON.stringify(err) : String(err))
-      setError(msg)
+      setActionError(msg)
+      setTimeout(() => setActionError(null), 6000)
     } finally {
       setActionLoading(false)
     }
@@ -272,33 +259,49 @@ export default function ContractView({ contractId }: ContractViewProps) {
       <div className={styles.page}>
         <Navbar />
         <main className={styles.main}>
-          <div style={{ textAlign: 'center', padding: '80px 0', color: '#888' }}>
-            <p>Chargement du contrat...</p>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', paddingTop: 120 }}>
+            <div style={{ width: 32, height: 32, border: '3px solid rgba(255,255,255,0.08)', borderTop: '3px solid #888', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         </main>
       </div>
     )
   }
 
-  if (error && !escrowState) {
+  if (fetchError && !escrowState) {
     return (
       <div className={styles.page}>
         <Navbar />
         <main className={styles.main}>
-          <div style={{ textAlign: 'center', padding: '80px 20px', maxWidth: '480px', margin: '0 auto' }}>
-            <h2 style={{ color: '#4AEDC4', fontSize: '22px', fontWeight: 700, marginBottom: '12px' }}>
-              Contrat terminé
-            </h2>
-            <p style={{ color: '#aaa', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>
-              Ce contrat a été exécuté avec succès. Les fonds ont été libérés et le contrat a été détruit on-chain.
-            </p>
-            <div style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px', marginBottom: '24px' }}>
-              <span style={{ color: '#666', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Adresse du contrat</span>
-              <p style={{ color: '#fff', fontSize: '13px', wordBreak: 'break-all', marginTop: '6px', fontFamily: 'monospace' }}>{contractId}</p>
+          <div style={{ width: '100%', height: '100%', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 12, display: 'inline-flex', paddingTop: 80 }}>
+            <div style={{ paddingTop: 12, paddingBottom: 12, paddingLeft: 12, paddingRight: 24, background: '#1A1A1A', overflow: 'hidden', borderRadius: 56, outline: '1px rgba(255, 255, 255, 0.12) solid', outlineOffset: '-1px', justifyContent: 'flex-start', alignItems: 'center', gap: 12, display: 'inline-flex' }}>
+              <div style={{ padding: 8, position: 'relative', overflow: 'hidden', borderRadius: 48, flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', gap: 100, display: 'inline-flex' }}>
+                <Check size={24} weight="bold" color="white" />
+              </div>
+              <div style={{ color: '#888888', fontSize: 14, fontFamily: 'Inter', fontWeight: '500', lineHeight: '20px', wordWrap: 'break-word' }}>Contrat terminé !</div>
             </div>
-            <a href="/" style={{ color: '#4AEDC4', fontSize: '14px', textDecoration: 'none' }}>
-              ← Retour à l&apos;accueil
-            </a>
+            <div style={{ width: 482, padding: 32, background: '#1A1A1A', overflow: 'hidden', borderRadius: 24, outline: '1px rgba(255, 255, 255, 0.12) solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 24, display: 'flex' }}>
+              <div style={{ alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 24, display: 'flex' }}>
+                <div style={{ alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 24, display: 'flex' }}>
+                  <div style={{ alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 12, display: 'flex' }}>
+                    <div style={{ width: 370, textAlign: 'center', color: '#888888', fontSize: 14, fontFamily: 'Inter', fontWeight: '500', lineHeight: '20px', wordWrap: 'break-word' }}>
+                      Ce contrat a été exécuté avec succès. Les fonds ont été libérés et le contrat a été détruit on-chain
+                    </div>
+                  </div>
+                  <div style={{ alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', gap: 12, display: 'flex' }}>
+                    <div style={{ color: '#888888', fontSize: 14, fontFamily: 'Inter', fontWeight: '500', lineHeight: '20px', wordWrap: 'break-word' }}>Adresse du contrat</div>
+                    <div style={{ alignSelf: 'stretch', padding: 12, background: '#212121', overflow: 'hidden', borderRadius: 16, outline: '1px rgba(255, 255, 255, 0.12) solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 100, display: 'flex' }}>
+                      <div style={{ color: 'white', fontSize: 14, fontFamily: 'Inter', fontWeight: '500', lineHeight: '20px', wordWrap: 'break-word' }}>{contractId}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 12, display: 'flex' }}>
+                <a href="/" style={{ alignSelf: 'stretch', paddingLeft: 8, paddingRight: 16, overflow: 'hidden', borderRadius: 1024, justifyContent: 'center', alignItems: 'center', gap: 8, display: 'inline-flex', textDecoration: 'none' }}>
+                  <span style={{ color: '#888888', fontSize: 12, fontFamily: 'Inter', fontWeight: '500', lineHeight: '16px', wordWrap: 'break-word' }}>Retour à l&apos;accueil</span>
+                </a>
+              </div>
+            </div>
           </div>
         </main>
       </div>
@@ -583,8 +586,8 @@ export default function ContractView({ contractId }: ContractViewProps) {
                 )}
               </div>
 
-              {error && (
-                <p style={{ color: '#ef4444', fontSize: '12px', padding: '8px 0' }}>{error}</p>
+              {actionError && (
+                <p style={{ color: '#ef4444', fontSize: '12px', padding: '8px 0' }}>{actionError}</p>
               )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
 
