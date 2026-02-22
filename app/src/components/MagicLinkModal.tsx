@@ -21,7 +21,7 @@ function truncateAddress(address: string): string {
 
 function formatAlph(attoAlph: bigint): string {
   const alph = Number(attoAlph) / 1e18
-  return alph.toLocaleString('fr-FR', { maximumFractionDigits: 2 })
+  return alph.toLocaleString('en-US', { maximumFractionDigits: 2 })
 }
 
 const STATUS_LABELS: Record<number, string> = {
@@ -127,24 +127,24 @@ export default function MagicLinkModal({ contractId, onClose }: MagicLinkModalPr
           {/* Contract details */}
           {loading ? (
             <p style={{ color: '#888', fontSize: '13px', textAlign: 'center', padding: '24px 0' }}>
-              Chargement...
+              Loading...
             </p>
           ) : contractData ? (
             <div className={styles.detailsGrid}>
               <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Projet</span>
+                <span className={styles.detailLabel}>Project</span>
                 <span className={styles.detailValue}>{contractData.projectName}</span>
               </div>
               <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Montant</span>
+                <span className={styles.detailLabel}>Amount</span>
                 <span className={styles.detailValue}>{contractData.amount} ALPH</span>
               </div>
               <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Caution</span>
+                <span className={styles.detailLabel}>Collateral</span>
                 <span className={styles.detailValue}>{contractData.collateral} ALPH</span>
               </div>
               <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Statut</span>
+                <span className={styles.detailLabel}>Status</span>
                 <span className={styles.detailValue}>{STATUS_LABELS[contractData.status] || 'Unknown'}</span>
               </div>
               <div className={styles.detailItem}>
@@ -158,7 +158,7 @@ export default function MagicLinkModal({ contractId, onClose }: MagicLinkModalPr
             </div>
           ) : (
             <p style={{ color: '#ef4444', fontSize: '13px', textAlign: 'center', padding: '24px 0' }}>
-              Contrat introuvable.
+              Contract not found.
             </p>
           )}
 
@@ -176,7 +176,7 @@ export default function MagicLinkModal({ contractId, onClose }: MagicLinkModalPr
               <div className={styles.connectedInfo}>
                 <div className={styles.connectedDot} />
                 <span className={styles.connectedText}>
-                  Connecté : {account?.address ? truncateAddress(account.address) : ''}
+                  Connected: {account?.address ? truncateAddress(account.address) : ''}
                 </span>
               </div>
             )}

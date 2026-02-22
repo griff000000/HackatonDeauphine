@@ -37,7 +37,7 @@ function truncateAddress(address: string): string {
 
 function formatAlph(attoAlph: bigint): string {
   const alph = Number(attoAlph) / 1e18;
-  return alph.toLocaleString("fr-FR", { maximumFractionDigits: 2 });
+  return alph.toLocaleString("en-US", { maximumFractionDigits: 2 });
 }
 
 export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
@@ -84,7 +84,7 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
       });
     } catch (err: any) {
       console.error("Failed to fetch contract:", err);
-      setError("Contrat introuvable ou erreur réseau.");
+      setError("Contract not found or network error.");
     } finally {
       setLoading(false);
     }
@@ -161,7 +161,7 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
         >
           <Link href={`/contract/${contractId}`} className={styles.backButton}>
             <ArrowLeft size={16} />
-            Retour au contrat
+            Back to contract
           </Link>
         </motion.div>
 
@@ -175,7 +175,7 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
           <motion.div variants={itemVariants} className={styles.headerCard}>
             <div className={styles.headerContent}>
               {loading ? (
-                <div className={styles.headerTitle}>Chargement...</div>
+                <div className={styles.headerTitle}>Loading...</div>
               ) : error ? (
                 <div className={styles.headerTitle} style={{ color: "#ef4444" }}>
                   {error}
@@ -183,15 +183,15 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
               ) : (
                 <>
                   <div className={styles.headerTitle}>
-                    Arbitrage : {totalAtStake} ALPH en jeu
+                    Arbitration: {totalAtStake} ALPH at stake
                   </div>
                   <div className={styles.headerSubtitleContainer}>
                     <div className={styles.headerSubtitle}>
                       {statusNum === 3
-                        ? "Examinez les arguments et décidez du partage."
+                        ? "Review the arguments and decide on the split."
                         : statusNum === 4
-                        ? "Ce litige a été résolu."
-                        : "Ce contrat n'est pas en litige."}
+                        ? "This dispute has been resolved."
+                        : "This contract is not in dispute."}
                     </div>
                   </div>
                 </>
@@ -206,11 +206,11 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
                 <div className={styles.argumentsContent}>
                   <div className={styles.argumentsHeader}>
                     <div className={styles.sectionLabelContainer}>
-                      <div className={styles.sectionLabel}>Raison du litige</div>
+                      <div className={styles.sectionLabel}>Dispute reason</div>
                     </div>
                     <div className={styles.reasonTitleContainer}>
                       <div className={styles.reasonTitle}>
-                        {escrowData.disputeReason || "Aucune raison fournie"}
+                        {escrowData.disputeReason || "No reason provided"}
                       </div>
                     </div>
                   </div>
@@ -222,7 +222,7 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
                       </div>
                     </div>
                     <div className={styles.argumentText}>
-                      {escrowData.disputeReason || "Pas encore d'argument."}
+                      {escrowData.disputeReason || "No argument yet."}
                     </div>
                   </div>
                   <div className={styles.argumentBlock}>
@@ -233,7 +233,7 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
                       </div>
                     </div>
                     <div className={styles.argumentText}>
-                      {escrowData.disputeEvidence || "Pas encore de réponse."}
+                      {escrowData.disputeEvidence || "No response yet."}
                     </div>
                   </div>
 
@@ -242,7 +242,7 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
                       <div className={styles.argumentParticipant}>
                         <Gavel size={16} color="#4AEDC4" />
                         <div className={styles.participantName} style={{ color: "#4AEDC4" }}>
-                          Décision de l'arbitre
+                          Arbiter's decision
                         </div>
                       </div>
                       <div className={styles.argumentText} style={{ color: "#4AEDC4" }}>
@@ -256,19 +256,19 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
               {/* Card 3: Decision with ArcSlider */}
               {statusNum === 3 && (
                 <motion.div variants={itemVariants} className={styles.decisionCard}>
-                  <div className={styles.decisionTitle}>Votre Décision</div>
+                  <div className={styles.decisionTitle}>Your Decision</div>
                   <div className={styles.decisionContent}>
                     {!isConnected ? (
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", width: "100%" }}>
                         <p style={{ color: "#888", fontSize: "13px", textAlign: "center" }}>
-                          Connectez votre wallet via la navbar pour arbitrer ce litige.
+                          Connect your wallet via the navbar to arbitrate this dispute.
                         </p>
                       </div>
                     ) : !isArbiter ? (
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", padding: "16px", width: "100%" }}>
                         <ShieldCheck size={32} color="#ef4444" />
                         <p style={{ color: "#ef4444", fontSize: "13px", textAlign: "center" }}>
-                          Seule l'adresse arbitre whitelistée peut trancher.
+                          Only the whitelisted arbiter address can make a decision.
                         </p>
                         <p style={{ color: "#555", fontSize: "11px", fontFamily: "monospace" }}>
                           {truncateAddress(ARBITER_ADDRESS)}
@@ -278,7 +278,7 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
                         <Gavel size={32} color="#4AEDC4" />
                         <p style={{ color: "#4AEDC4", fontSize: "14px", fontWeight: 600 }}>
-                          Litige résolu avec succès !
+                          Dispute resolved successfully!
                         </p>
                       </div>
                     ) : (
@@ -292,7 +292,7 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
                         </div>
 
                         <textarea
-                          placeholder="Justification de votre décision..."
+                          placeholder="Justification for your decision..."
                           value={justification}
                           onChange={(e) => setJustification(e.target.value)}
                           rows={3}
@@ -324,8 +324,8 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
                         >
                           <Gavel size={16} weight="bold" color="black" />
                           {actionLoading
-                            ? "Transaction en cours..."
-                            : `Confirmer le split (${splitAmounts.freelancePercent}% freelancer / ${splitAmounts.clientPercent}% client)`}
+                            ? "Transaction in progress..."
+                            : `Confirm split (${splitAmounts.freelancePercent}% freelancer / ${splitAmounts.clientPercent}% client)`}
                         </button>
                       </>
                     )}

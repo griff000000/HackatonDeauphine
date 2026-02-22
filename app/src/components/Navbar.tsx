@@ -126,9 +126,9 @@ export default function Navbar({ userRole = 'visitor' }: NavbarProps) {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className={styles.dialogHeader}>
-                    <h3 className={styles.dialogTitle}>Déconnexion</h3>
+                    <h3 className={styles.dialogTitle}>Disconnect</h3>
                     <p className={styles.dialogDescription}>
-                      Veux-tu vraiment te déconnecter ?
+                      Do you really want to disconnect?
                     </p>
                   </div>
                   <div className={styles.dialogFooter}>
@@ -136,7 +136,7 @@ export default function Navbar({ userRole = 'visitor' }: NavbarProps) {
                       className={styles.dialogBtnCancel}
                       onClick={() => setShowDisconnectDialog(false)}
                     >
-                      Annuler
+                      Cancel
                     </button>
                     <button
                       className={styles.dialogBtnConfirm}
@@ -145,7 +145,7 @@ export default function Navbar({ userRole = 'visitor' }: NavbarProps) {
                         setShowDisconnectDialog(false)
                       }}
                     >
-                      Se déconnecter
+                      Disconnect
                     </button>
                   </div>
                 </motion.div>

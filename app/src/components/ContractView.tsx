@@ -866,7 +866,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                       onClick={handleSubmitEvidence}
                       disabled={actionLoading || !evidenceText.trim()}
                     >
-                      {actionLoading ? <><span className={styles.btnSpinner} /> Envoi...</> : <><PaperPlaneRight size={18} weight="bold" color="black" /> Soumettre la preuve</>}
+                      {actionLoading ? <><span className={styles.btnSpinner} /> Submitting...</> : <><PaperPlaneRight size={18} weight="bold" color="black" /> Submit evidence</>}
                     </button>
                   </>
                 )}
@@ -878,14 +878,14 @@ export default function ContractView({ contractId }: ContractViewProps) {
                       style={{ width: '100%', marginTop: '4px' }}
                     >
                       <Gavel size={18} weight="bold" color="black" />
-                      Voir la page d'arbitrage
+                      View arbitration page
                     </button>
                   </Link>
                 )}
 
                 {statusNum === 4 && (
                   <p style={{ color: '#4AEDC4', fontSize: '13px', textAlign: 'center' }}>
-                    Ce contrat est terminé.
+                    This contract is completed.
                   </p>
                 )}
               </div>
@@ -894,13 +894,13 @@ export default function ContractView({ contractId }: ContractViewProps) {
             {/* Card 3: Contract Info */}
             <motion.div className={styles.infoCardDark} variants={itemVariants}>
               <div className={styles.infoCardHeader}>
-                <span className={styles.infoCardTitle}>Informations du contrat</span>
+                <span className={styles.infoCardTitle}>Contract Information</span>
               </div>
 
               <div className={styles.infoCardList}>
                 <div className={styles.infoRowDark}>
                   <div className={styles.infoLabelContainer}>
-                    <span className={styles.infoLabelDark}>Montant verrouillé</span>
+                    <span className={styles.infoLabelDark}>Locked amount</span>
                   </div>
                   <div className={styles.infoValueContainer}>
                     <span className={styles.infoValueDark}>{formatAlph(escrowState.amount)} ALPH</span>
@@ -929,7 +929,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
 
                 <div className={styles.infoRowDark}>
                   <div className={styles.infoLabelContainer}>
-                    <span className={styles.infoLabelDark}>Arbitre</span>
+                    <span className={styles.infoLabelDark}>Arbiter</span>
                   </div>
                   <div className={styles.infoValueContainerWithIcon}>
                     <span className={styles.infoValueMuted}>{truncateAddress(escrowState.arbiter)}{isArbiter ? ' (you)' : ''}</span>
@@ -948,7 +948,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
 
                 <div className={styles.infoRowDarkLast}>
                   <div className={styles.infoLabelContainer}>
-                    <span className={styles.infoLabelDark}>Caution</span>
+                    <span className={styles.infoLabelDark}>Collateral</span>
                   </div>
                   <div className={styles.infoValueContainer}>
                     <span className={styles.infoValueMuted}>{formatAlph(escrowState.collateral)} ALPH</span>
