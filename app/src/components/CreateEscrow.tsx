@@ -327,7 +327,6 @@ export default function CreateEscrow() {
                 transition={{ duration: 0.2 }}
                 style={{ gridArea: '1 / 1', display: 'flex', alignItems: 'center', gap: 'var(--spacing-xxsm)', whiteSpace: 'nowrap' }}
               >
-                <div className={styles.headerIcon}>
                   <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="16" cy="16" r="16" fill="url(#headerGrad)"/>
                     <g transform="translate(4, 4)">
@@ -344,7 +343,6 @@ export default function CreateEscrow() {
                       </linearGradient>
                     </defs>
                   </svg>
-                </div>
                 <p className={styles.headerText}>Create Escrow Contract</p>
               </motion.div>
             )}
@@ -358,7 +356,6 @@ export default function CreateEscrow() {
                 transition={{ duration: 0.2 }}
                 style={{ gridArea: '1 / 1', display: 'flex', alignItems: 'center', gap: 'var(--spacing-xxsm)', whiteSpace: 'nowrap' }}
               >
-                <div className={styles.headerIcon}>
                   <svg className={styles.spinningLoader} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="12" cy="12" r="12" fill="url(#loaderBgGrad)"/>
                     <circle cx="12" cy="12" r="8" stroke="white" strokeWidth="1.5" strokeDasharray="30" strokeDashoffset="0" strokeLinecap="round"/>
@@ -369,7 +366,6 @@ export default function CreateEscrow() {
                       </linearGradient>
                     </defs>
                   </svg>
-                </div>
                 <p className={styles.headerText}>
                   Transaction in progress<span className={styles.loadingDots}></span>
                 </p>
@@ -385,7 +381,6 @@ export default function CreateEscrow() {
                 transition={{ duration: 0.2 }}
                 style={{ gridArea: '1 / 1', display: 'flex', alignItems: 'center', gap: 'var(--spacing-xxsm)', whiteSpace: 'nowrap' }}
               >
-              <div className={styles.headerIcon}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="12" cy="12" r="12" fill="url(#successGrad)"/>
                   <path d="M7 12.5L10.5 16L17 8" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -396,7 +391,6 @@ export default function CreateEscrow() {
                     </linearGradient>
                   </defs>
                 </svg>
-              </div>
               <p className={styles.headerText}>Funds locked!</p>
             </motion.div>
           )}
