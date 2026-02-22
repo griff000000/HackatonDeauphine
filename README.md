@@ -1,237 +1,237 @@
-# Trove - Escrow Decentralisé sur Alephium
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="app/public/logo-light.svg">
+    <source media="(prefers-color-scheme: light)" srcset="app/public/logo-dark.svg">
+    <img alt="Trove" src="app/public/logo-dark.svg" width="340">
+  </picture>
+</p>
 
-Plateforme d'escrow trustless avec système de réputation on-chain, construite sur la blockchain Alephium.
+<p align="center">
+  <strong>Trustless escrow for freelancers. Zero commission. Zero risk. Built on Alephium.</strong>
+</p>
 
-Un client dépose des fonds, un freelancer dépose une caution proportionnelle à son score de confiance, et un arbitre tranche en cas de litige. Tout est transparent et vérifiable on-chain.
+1.57 billion freelancers worldwide. Most have no contract, no protection, no recourse. Just blind trust.
 
----
+The alternatives? Platforms like Upwork take 10–20% on every gig — that's $5,000–$10,000/year gone for a freelancer billing $50k. Or you go direct: you deliver, you invoice, you wait. And wait. The client ghosts. Your 80 hours of work? A gift.
 
-## Architecture du projet
+Too expensive, or too risky. There's nothing in between.
 
-Monorepo **yarn workspaces** avec 3 modules :
-
-| Dossier | Description |
-|---------|-------------|
-| `contracts/` | Smart contracts en Ralph + scripts de déploiement + tests |
-| `app/` | Frontend Next.js (React + TypeScript) |
-| `alephium-stack/` | Docker Compose pour le node Alephium local (devnet) |
-| `docs/` | Documentation technique complète |
-
----
-
-## Prérequis
-
-| Outil | Version minimum | Installation |
-|-------|----------------|--------------|
-| Node.js | >= 18 | [nodejs.org](https://nodejs.org/) |
-| Yarn | v1 | `npm install -g yarn` |
-| Docker | récent | [docker.com](https://www.docker.com/) |
-| Docker Compose | inclus avec Docker Desktop | - |
+**Trove is the in-between.** A smart contract locks both parties' money. The code releases it when the work is done. No middleman. No commission. No trust required.
 
 ---
 
-## Lancement rapide (une seule commande)
+## How It Works
 
-### Devnet (local)
+```
+Client                        Freelancer                      Arbiter
+  |                              |                               |
+  |── create escrow ──────────>  |                               |
+  |   (locks 1000 ALPH)         |                               |
+  |                              |                               |
+  |                              |── accept + deposit bond ───>  |
+  |                              |   (100 ALPH collateral)       |
+  |                              |                               |
+  |                              |── deliver(IPFS link) ──────>  |
+  |                              |                               |
+  |── release() ──────────────>  |                               |
+  |   1100 ALPH → freelancer     |                               |
+  |   (atomic, single tx)        |                               |
+  |                              |                               |
+  |   Trust score +5             |                               |
+  |   Next bond reduced          |                               |
+```
+
+The client deposits payment. The freelancer deposits a bond. Both are locked in a smart contract that **neither party controls**. When the client validates the work, everything is released in a **single atomic transaction** — payment + bond go to the freelancer. One click. One transaction. Zero risk of partial execution.
+
+If there's a dispute, an on-chain arbiter reviews the evidence (specs, deliverables, messages — all stored on IPFS) and redistributes funds by percentage. Every decision is recorded on-chain. Transparent. Immutable. Auditable.
+
+**No scenario leaves anyone stuck:**
+
+| Situation | What happens |
+|-----------|-------------|
+| Client validates | Freelancer gets payment + bond. Score +5. |
+| Client disappears | Auto-claim after 48h past deadline. Freelancer gets everything. |
+| Client cancels early | Full refund before freelancer accepts. No penalty. |
+| Freelancer abandons | Client refunded. Freelancer gets bond back. Score -3. |
+| Dispute | Arbiter splits funds 0–100% with on-chain justification. |
+
+---
+
+## On-chain Reputation
+
+Today, to be credible as a freelancer, you give 15% of your income to a platform. On Trove, **you build your own credibility. And nobody can take it away.**
+
+The TrustRegistry contract stores every freelancer's trust score on-chain (0–100, starting at 50). The bond decreases as the score increases:
+
+| Score | Bond | What it means |
+|-------|------|---------------|
+| 50 (new) | 50% of base | First gig. Unknown track record. |
+| 70 | 30% | Proven. Several successful deliveries. |
+| 90+ | 10% (floor) | Veteran. Minimal bond, maximum trust. |
+
+Formula: `bond = baseCollateral * max(10, 100 - score) / 100`
+
+A new freelancer deposits a full bond. After 5 missions, it drops. After 20, it's almost symbolic. They didn't send a resume. They didn't beg a platform to verify them. They just did the work — and the blockchain remembered.
+
+---
+
+## Why Alephium
+
+We didn't pick Alephium by accident.
+
+| | Ethereum | Alephium |
+|---|---|---|
+| **Model** | Account-based. All contracts share global state. | **sUTXO**. Each escrow is an isolated UTXO with its own state. |
+| **Isolation** | One bug can contaminate other contracts. Like all bank vaults sharing one lock. | Each vault has its own lock, its own key. Mathematically isolated. |
+| **Atomicity** | Multi-step transactions. Intermediate states. Race conditions. | Multiple inputs → one output → one transaction. **All or nothing.** |
+| **Security** | Reentrancy. Unlimited token approvals. Flashloans. | **Impossible by design.** The Asset Permission System eliminates these attack vectors at the VM level. |
+| **Energy** | PoW / PoS | Proof of Less Work. **87% less energy** than classic PoW. |
+
+Alephium's sUTXO model lets us build **Smart-UTXOs** — assets that carry their own release conditions. The escrow contract IS the vault. Not a pointer to a balance in a global ledger. The actual funds, locked, with code that defines exactly when and how they move.
+
+This is the level of security that freelancers deserve.
+
+---
+
+## Architecture
+
+### Smart Contracts (Ralph)
+
+**`TrustRegistry`** — Persistent on-chain reputation. One instance, stores all scores.
+
+**`Escrow`** — One per mission. 13 fields, 8 functions, full dispute lifecycle.
+
+```
+Created ──> Active ──> Delivered ──> Done (release / autoClaim)
+   |           |  |         |
+   |           |  |         └──> Dispute ──> Done (resolve)
+   |           |  |
+   |           |  └──> Done (refundByFreelancer)
+   |           |
+   |           └──> Dispute ──> Done (resolve)
+   |
+   └──> Done (cancelByClient)
+```
+
+**9 TxScripts** — Alephium's native transaction scripts for frontend interaction:
+`AcceptAndDeposit` · `Deliver` · `ReleasePayment` · `OpenDispute` · `SubmitEvidence` · `ResolveDispute` · `RefundByFreelancer` · `CancelEscrow` · `ClaimAfterDeadline`
+
+### Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Blockchain | Alephium (sUTXO, Proof of Less Work) |
+| Smart contracts | Ralph (.ral) |
+| Frontend | Next.js 14 · React 18 · TypeScript |
+| Wallet | Alephium Extension (@alephium/web3-react) |
+| Specs storage | IPFS via Pinata |
+| SDK | @alephium/web3 · @alephium/cli |
+| Tests | Jest · @alephium/web3-test |
+| Infra | Docker Compose (node + explorer + PostgreSQL) |
+
+### Monorepo
+
+```
+trove/
+├── contracts/            # Ralph contracts + deploy scripts + tests
+│   ├── contracts/        # escrow.ral · trust_registry.ral · escrow_scripts.ral
+│   ├── scripts/          # Deploy scripts (TrustRegistry, then Escrow)
+│   ├── test/             # Unit tests
+│   └── artifacts/        # Auto-generated TypeScript bindings
+├── app/                  # Next.js frontend
+│   ├── src/components/   # CreateEscrow · ContractView · ArbitrationView
+│   └── src/utils/        # Alephium web3 integration
+├── alephium-stack/       # Docker Compose for local devnet
+└── docs/                 # Technical documentation
+```
+
+---
+
+## Run It
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) >= 18
+- [Yarn](https://classic.yarnpkg.com/) v1 (`npm install -g yarn`)
+- [Docker](https://www.docker.com/) + Docker Compose
+
+### One command
 
 ```bash
+git clone <repo-url> && cd HackatonDeauphine
+yarn install
 yarn go
 ```
 
-Lance le devnet Docker + compile + déploie + build + lance l'app. Tout-en-un.
+`yarn go` starts the Docker devnet, compiles Ralph contracts, deploys them, builds TypeScript bindings, and launches the frontend. Everything.
+
+**http://localhost:3000** — you're live.
 
 ### Testnet
 
 ```bash
-export PRIVATE_KEYS="ta_clé_privée"
+export PRIVATE_KEYS="your_private_key"
 yarn go:testnet
 ```
 
-Ou si les contrats sont déjà déployés :
+Free tokens: [Alephium Faucet](https://faucet.testnet.alephium.org/)
 
-```bash
-yarn dev:testnet
-```
+### Commands
 
-Le frontend sera disponible sur **http://localhost:3000**.
+| Command | What it does |
+|---------|-------------|
+| `yarn go` | Full stack: devnet + compile + deploy + build + frontend |
+| `yarn go:testnet` | Same, but deploys to testnet |
+| `yarn dev:testnet` | Frontend on testnet (contracts already deployed) |
+| `yarn devnet:start` | Start Docker devnet |
+| `yarn devnet:stop` | Stop Docker devnet |
+| `yarn compile` | Compile Ralph → artifacts |
+| `yarn deploy` | Deploy contracts to devnet |
+| `yarn build:contracts` | Build TypeScript bindings |
+| `yarn test` | Run unit tests |
+| `yarn dev` | Start frontend (port 3000) |
 
----
-
-## Lancement complet depuis zéro
-
-### Étape 1 — Cloner et installer
-
-```bash
-git clone <repo-url>
-cd HackatonDeauphine
-yarn install
-```
-
-### Étape 2 — Lancer le devnet local
-
-```bash
-yarn devnet:start
-```
-
-Attendre que le node soit healthy (~30 secondes). Vérifier avec :
-
-```bash
-curl -s http://127.0.0.1:22973/infos/self-clique | head -c 50
-```
-
-Si ça retourne du JSON, le node est prêt.
-
-**Services disponibles :**
+### Devnet services
 
 | Service | URL |
 |---------|-----|
-| Node Alephium (API) | http://127.0.0.1:22973 |
-| Node Swagger (docs API) | http://127.0.0.1:22973/docs |
-| Explorer Frontend | http://localhost:23000 |
-| Explorer Backend API | http://127.0.0.1:9090 |
-| Explorer Swagger | http://127.0.0.1:9090/docs |
-| pgAdmin | http://localhost:5050 |
+| Alephium Node | http://127.0.0.1:22973 |
+| API Docs | http://127.0.0.1:22973/docs |
+| Block Explorer | http://localhost:23000 |
 
-### Étape 3 — Compiler, déployer, lancer
+### Devnet wallet
 
-```bash
-yarn go
-```
+Import into [Alephium Extension](https://alephium.org/#wallets) (custom network `http://127.0.0.1:22973`):
 
-C'est tout. L'app tourne sur **http://localhost:3000**.
-
----
-
-## Commandes détaillées
-
-Toutes les commandes se lancent depuis la **racine** du projet :
-
-### Smart contracts
-
-| Commande | Description |
-|----------|-------------|
-| `yarn compile` | Compile les contracts Ralph → génère les artifacts dans `contracts/artifacts/` |
-| `yarn deploy` | Déploie les contracts sur le devnet (node doit tourner) |
-| `yarn build:contracts` | Compile les artifacts TypeScript dans `contracts/dist/` |
-| `yarn test` | Lance les tests unitaires des contracts (Jest) |
-| `yarn setup` | Compile + déploie + build TypeScript (sans lancer le frontend) |
-
-### Frontend
-
-| Commande | Description |
-|----------|-------------|
-| `yarn dev` | Lance le frontend Next.js en mode développement (port 3000) |
-| `yarn build:app` | Build de production du frontend |
-
-### Devnet (Docker)
-
-| Commande | Description |
-|----------|-------------|
-| `yarn devnet:start` | Démarre le devnet (node + explorer + PostgreSQL + pgAdmin) |
-| `yarn devnet:stop` | Arrête le devnet |
-
-### Tout-en-un
-
-| Commande | Description |
-|----------|-------------|
-| `yarn go` | Devnet + compile + déploie + build TS + lance le frontend |
-| `yarn go:testnet` | Compile + déploie testnet + build TS + lance le frontend |
-| `yarn dev:testnet` | Lance le frontend sur testnet (sans redéployer) |
-
----
-
-## Wallet devnet
-
-Pour interagir avec l'app en local, importer ce wallet dans l'[extension Alephium](https://alephium.org/#wallets) :
-
-**Mnemonic :**
 ```
 vault alarm sad mass witness property virus style good flower rice alpha viable evidence run glare pretty scout evil judge enroll refuse another lava
 ```
 
-Ce wallet a **4'000'000 ALPH** pre-alloués sur le devnet (4 adresses).
-
-Configurer l'extension sur le réseau **custom** avec l'URL du node : `http://127.0.0.1:22973`
+4 addresses, **4,000,000 ALPH** each.
 
 ---
 
 ## Troubleshooting
 
-### `Failed to load contract artifact ... ENOENT`
-
-Le fichier `.project.json` est désynchronisé :
-
-```bash
-rm contracts/.project.json
-yarn compile
-```
-
-### `Module not found: Can't resolve 'my-contracts'`
-
-Le package TypeScript des contracts n'est pas buildé :
-
-```bash
-yarn build:contracts
-yarn install
-```
-
-### Le deploy échoue avec une erreur de connexion
-
-Le devnet n'est pas lancé :
-
-```bash
-yarn devnet:start
-```
-
-### Le frontend affiche des adresses vides
-
-Les contracts n'ont pas été déployés. Les adresses sont lues dynamiquement depuis `contracts/deployments/.deployments.{network}.json` via `loadDeployments()`. Relancer :
-
-```bash
-yarn setup
-yarn dev
-```
-
-### Docker : port already in use
-
-Un autre service utilise les ports requis. Arrêter les containers existants :
-
-```bash
-yarn devnet:stop
-```
+| Problem | Fix |
+|---------|-----|
+| `ENOENT` on artifacts | `rm contracts/.project.json && yarn compile` |
+| `Can't resolve 'my-contracts'` | `yarn build:contracts && yarn install` |
+| Deploy fails (connection) | `yarn devnet:start` |
+| Empty addresses in frontend | `yarn setup && yarn dev` |
+| Port already in use | `yarn devnet:stop` |
 
 ---
 
-## Déploiement Testnet
+## Docs
 
-### 1. Obtenir des ALPH de test
-
-Tokens testnet disponibles via le [Faucet Alephium](https://faucet.testnet.alephium.org/).
-
-### 2. Déployer et lancer
-
-```bash
-export PRIVATE_KEYS="ta_clé_privée"
-yarn go:testnet
-```
-
-Les adresses des contrats sont automatiquement lues depuis les fichiers de déploiement (`contracts/deployments/.deployments.testnet.json`) via `loadDeployments()`. Pas besoin de les hardcoder.
-
-### 3. Relancer sans redéployer
-
-```bash
-yarn dev:testnet
-```
+- [**Contract API**](docs/CONTRACTS_API.md) — Every function, every parameter, every check
+- [**Frontend Guide**](docs/FRONTEND_GUIDE.md) — How to talk to the contracts from React
+- [**Alephium Onboarding**](docs/ALEPHIUM-TECHNICAL-ONBOARDING.md) — Ralph language & sUTXO model
+- [**Implementation Plan**](PLAN.md) — Design decisions & architecture rationale
 
 ---
 
-## Documentation
+## License
 
-| Document | Description |
-|----------|-------------|
-| [docs/FRONTEND_GUIDE.md](docs/FRONTEND_GUIDE.md) | Comment communiquer avec les contracts depuis le frontend, exemples de code |
-| [docs/CONTRACTS_API.md](docs/CONTRACTS_API.md) | API complète des contracts : fonctions, paramètres, comportement |
-| [docs/PROJECT.md](docs/PROJECT.md) | Roadmap du projet |
-| [docs/ALEPHIUM-TECHNICAL-ONBOARDING.md](docs/ALEPHIUM-TECHNICAL-ONBOARDING.md) | Guide technique Alephium & Ralph pour débutants |
-| [PLAN.md](PLAN.md) | Plan d'implémentation détaillé des contracts Escrow + TrustRegistry |
-| [Documentation officielle Alephium](https://docs.alephium.org/dapps/) | Docs officielles |
+MIT
