@@ -8,7 +8,6 @@ import {
   LinkSimpleHorizontal,
   XCircle,
   ArrowRight,
-  LockSimple,
   CaretRight,
   CaretLeft,
   Plus,
@@ -33,6 +32,7 @@ import { getTrustRegistryAddress } from '@/utils/alephium'
 import styles from '@/styles/ContractView.module.css'
 import Navbar from './Navbar'
 import Link from 'next/link'
+import ParticipantOrb from './ParticipantOrb'
 
 interface ContractViewProps {
   contractId: string;
@@ -479,7 +479,11 @@ export default function ContractView({ contractId }: ContractViewProps) {
                   {/* Absolute Lock */}
                   <div className={styles.lockAbsContainer}>
                     <div className={styles.lockAbsInner}>
-                      <LockSimple size={24} color="#1A1A1A" weight="bold" />
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19.5 8.25H4.5C4.08579 8.25 3.75 8.58579 3.75 9V19.5C3.75 19.9142 4.08579 20.25 4.5 20.25H19.5C19.9142 20.25 20.25 19.9142 20.25 19.5V9C20.25 8.58579 19.9142 8.25 19.5 8.25Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M8.25 8.25V5.25C8.25 4.25544 8.64509 3.30161 9.34835 2.59835C10.0516 1.89509 11.0054 1.5 12 1.5C12.9946 1.5 13.9484 1.89509 14.6517 2.59835C15.3549 3.30161 15.75 4.25544 15.75 5.25V8.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <rect width="16.5" height="12" transform="translate(3.375 7.875)" fill="currentColor"/>
+                      </svg>
                     </div>
                   </div>
                 </div>
@@ -488,7 +492,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                 <div className={styles.stakeholdersListDark}>
                   <div className={styles.stakeholderRowDark}>
                     <div className={styles.stakeholderLeftDark}>
-                       <div className={styles.stakeholderAvatarPlaceholder} />
+                       <ParticipantOrb role="client" />
                        <span className={styles.stakeholderRoleDark}>Client</span>
                        {isClient && <span className={styles.trustScoreMuted}>(you)</span>}
                     </div>
@@ -499,8 +503,8 @@ export default function ContractView({ contractId }: ContractViewProps) {
 
                   <div className={styles.stakeholderRowDark}>
                     <div className={styles.stakeholderLeftDark}>
-                       <div className={styles.stakeholderAvatarFreelance} />
-                       <span className={styles.stakeholderRoleDark}>Freelance</span>
+                       <ParticipantOrb role="freelancer" />
+                       <span className={styles.stakeholderRoleDark}>Freelancer</span>
                        {isFreelancer && <span className={styles.trustScoreMuted}>(you)</span>}
                        <span className={styles.trustScoreMuted}>Trust score - {trustScore?.toString() || '50'}</span>
                     </div>
@@ -511,7 +515,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
 
                   <div className={styles.stakeholderRowDark}>
                     <div className={styles.stakeholderLeftDark}>
-                       <div className={styles.stakeholderAvatarArbitre} />
+                       <ParticipantOrb role="arbitrator" />
                        <span className={styles.stakeholderRoleDark}>Arbiter</span>
                        {isArbiter && <span className={styles.trustScoreMuted}>(you)</span>}
                     </div>

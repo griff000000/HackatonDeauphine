@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Hash, Check, Copy, CurrencyDollar, LockSimple, ArrowRight, User } from '@phosphor-icons/react'
+import { X, Hash, Check, Copy, CurrencyDollar, ArrowRight, User } from '@phosphor-icons/react'
 import { useWallet } from '@alephium/web3-react'
 import { AlephiumConnectButton } from '@alephium/web3-react'
 import { hexToString } from '@alephium/web3'
@@ -110,7 +110,11 @@ export default function MagicLinkModal({ contractId, onClose }: MagicLinkModalPr
 
           <div className={styles.header}>
             <div className={styles.headerIcon}>
-              <LockSimple size={20} weight="fill" color="#4AEDC4" />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19.5 8.25H4.5C4.08579 8.25 3.75 8.58579 3.75 9V19.5C3.75 19.9142 4.08579 20.25 4.5 20.25H19.5C19.9142 20.25 20.25 19.9142 20.25 19.5V9C20.25 8.58579 19.9142 8.25 19.5 8.25Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M8.25 8.25V5.25C8.25 4.25544 8.64509 3.30161 9.34835 2.59835C10.0516 1.89509 11.0054 1.5 12 1.5C12.9946 1.5 13.9484 1.89509 14.6517 2.59835C15.3549 3.30161 15.75 4.25544 15.75 5.25V8.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <rect width="16.5" height="12" transform="translate(3.375 7.875)" fill="currentColor"/>
+                </svg>
             </div>
             <h2 className={styles.title}>Escrow Contract</h2>
           </div>

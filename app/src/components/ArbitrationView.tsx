@@ -13,6 +13,7 @@ import { Escrow, ResolveDispute } from "my-contracts";
 import { ARBITER_ADDRESS, initWeb3 } from "@/utils/alephium";
 import Navbar from "./Navbar";
 import ArcSlider from "./ArcSlider";
+import ParticipantOrb from "./ParticipantOrb";
 
 interface ArbitrationViewProps {
   contractId: string;
@@ -216,7 +217,7 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
                   </div>
                   <div className={styles.argumentBlock}>
                     <div className={styles.argumentParticipant}>
-                      <div className={styles.clientGradientCircle} />
+                      <ParticipantOrb role="client" />
                       <div className={styles.participantName}>
                         Client · {truncateAddress(escrowData.client)}
                       </div>
@@ -227,7 +228,7 @@ export default function ArbitrationView({ contractId }: ArbitrationViewProps) {
                   </div>
                   <div className={styles.argumentBlock}>
                     <div className={styles.argumentParticipant}>
-                      <div className={styles.freelanceGradientCircle} />
+                      <ParticipantOrb role="freelancer" />
                       <div className={styles.participantName}>
                         Freelancer · {truncateAddress(escrowData.freelancer)}
                       </div>
