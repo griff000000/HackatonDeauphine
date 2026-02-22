@@ -4,6 +4,10 @@ import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, useMotionValue, animate } from 'framer-motion'
 import { UploadSimple, FilePdf, FileImage, FileDoc, File as FileIcon, X, LockSimple, Check, Copy, ArrowRight } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
+import { useWallet } from '@alephium/web3-react'
+import { ONE_ALPH, DUST_AMOUNT, stringToHex, addressFromContractId } from '@alephium/web3'
+import { Escrow, TrustRegistry } from 'my-contracts'
+import { getTrustRegistryAddress, getTrustRegistryId } from '@/utils/alephium'
 import styles from '@/styles/CreateEscrow.module.css'
 import { staggerContainer, itemVariants } from '@/utils/animations'
 
@@ -18,12 +22,13 @@ const getMonthName = (month: number) => {
 
 export default function CreateEscrow() {
   const router = useRouter()
-  // Mock constant
-  const monthlyRate = 50
+  const { connectionStatus, signer, account } = useWallet()
+  const isConnected = connectionStatus === 'connected'
+
   const [projectName, setProjectName] = useState('')
   const [amount, setAmount] = useState('')
   const [recipientAddress, setRecipientAddress] = useState('')
-  
+
   // Date states
   const [currentDate, setCurrentDate] = useState(() => {
     const d = new Date()
@@ -31,12 +36,15 @@ export default function CreateEscrow() {
   })
   const TODAY = new Date().getDate()
   const [selectedDay, setSelectedDay] = useState(TODAY)
-  const [monthDirection, setMonthDirection] = useState(1) // 1 for next, -1 for prev
+  const [monthDirection, setMonthDirection] = useState(1)
 
   const [dragActive, setDragActive] = useState(false)
-  const [walletConnected, setWalletConnected] = useState(false)
   const [status, setStatus] = useState<'form' | 'loading' | 'success'>('form')
-  
+  const [txError, setTxError] = useState<string | null>(null)
+
+  const [deployedContractId, setDeployedContractId] = useState<string>('')
+  const [deployedContractAddress, setDeployedContractAddress] = useState<string>('')
+
   // Ref for the drag container
   const constraintsRef = useRef<HTMLDivElement>(null)
   const innerRef = useRef<HTMLDivElement>(null)
@@ -60,19 +68,14 @@ export default function CreateEscrow() {
         const innerWidth = innerRef.current.scrollWidth;
         const containerCenter = containerWidth / 2;
         const targetCenter = targetChip.offsetLeft + (targetChip.offsetWidth / 2);
-        
+
         let targetX = containerCenter - targetCenter;
-        
-        // Calculate max drag boundaries to ensure we don't snap past the constraints
         const maxDrag = containerWidth - innerWidth;
-        
-        // Boundaries are usually [maxDrag, 0], plus whatever padding.
-        // If content is smaller than container, targetX might be positive, but drag constraints limit it.
         targetX = Math.max(maxDrag, Math.min(0, targetX));
 
         animate(x, targetX, { type: "spring", stiffness: 300, damping: 30 });
       }
-    }, 10); // Small delay to allow react to render any layout changes
+    }, 10);
   };
 
   // File upload handlers
@@ -139,8 +142,6 @@ export default function CreateEscrow() {
     setUploadedFile(null)
   }
 
-
-
   const handlePrevMonth = () => {
     setMonthDirection(-1)
     setCurrentDate((prev) => {
@@ -153,7 +154,7 @@ export default function CreateEscrow() {
       centerSelectedDate(newMonth, newYear, 1);
       return { month: newMonth, year: newYear }
     })
-    setSelectedDay(1) // Reset selection when changing month
+    setSelectedDay(1)
   }
 
   const handleNextMonth = () => {
@@ -172,7 +173,6 @@ export default function CreateEscrow() {
   }
 
   const daysInMonth = getDaysInMonth(currentDate.month, currentDate.year)
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
 
   // Spring animation transition
   const springConfig = {
@@ -181,29 +181,110 @@ export default function CreateEscrow() {
     damping: 30
   }
 
-
-
   // Parse amount for display
   const numericAmount = parseFloat(amount) || 0
-  const usdValue = (numericAmount * 3.50).toFixed(2) // Mocked exchange rate: 1 ALPH = $3.50
+  const usdValue = (numericAmount * 3.50).toFixed(2)
 
   // Validate Recipient Address
-  // Basic check for Alephium address (base58, typically ~45 characters, often starts with 1)
   const isAddressValid = recipientAddress.length >= 40 && /^[1-9A-HJ-NP-Za-km-z]+$/.test(recipientAddress)
   const showAddressError = recipientAddress.length > 0 && !isAddressValid
 
-  const isFormComplete = 
+  const isFormComplete =
     projectName.trim().length > 0 &&
     numericAmount > 0 &&
     isAddressValid &&
     selectedDay > 0 &&
     uploadedFile?.status === 'success'
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    if (!signer || !account) return
+
     setStatus('loading')
-    setTimeout(() => {
+    setTxError(null)
+
+    try {
+      const deadlineDate = new Date(currentDate.year, currentDate.month, selectedDay, 23, 59, 59)
+      const deadlineTimestamp = BigInt(deadlineDate.getTime())
+
+      const amountAtto = BigInt(Math.round(numericAmount * 1e18))
+
+      const registryAddress = getTrustRegistryAddress()
+      console.log('[1] TrustRegistry address:', registryAddress)
+      const registryInstance = TrustRegistry.at(registryAddress)
+      console.log('[2] Calling calculateCollateral...')
+      const collateralResult = await registryInstance.view.calculateCollateral({
+        args: {
+          baseCollateral: amountAtto,
+          freelancer: recipientAddress
+        }
+      })
+      const collateralAtto = collateralResult.returns
+      console.log('[3] Collateral:', collateralAtto.toString())
+
+      const cdcHash = stringToHex(projectName)
+
+      const arbiterAddress = account.address
+
+      const trustRegistryId = getTrustRegistryId()
+      console.log('[4] TrustRegistry ID:', trustRegistryId)
+
+      const deployParams = {
+        initialFields: {
+          client: account.address,
+          freelancer: recipientAddress,
+          arbiter: arbiterAddress,
+          amount: amountAtto,
+          collateral: collateralAtto,
+          deadline: deadlineTimestamp,
+          cdcHash: cdcHash,
+          trustRegistry: trustRegistryId,
+          deliverableLink: stringToHex(''),
+          status: 0n,
+          disputeReason: stringToHex(''),
+          disputeEvidence: stringToHex(''),
+          disputeJustification: stringToHex('')
+        },
+        initialAttoAlphAmount: amountAtto + ONE_ALPH
+      }
+      console.log('[5] Building tx params...')
+      const txParams = await Escrow.contract.txParamsForDeployment(signer, deployParams, 0)
+      console.log('[6] Tx params built, signing...')
+      const deployResult = await signer.signAndSubmitDeployContractTx(txParams)
+      console.log('[7] Deploy result:', JSON.stringify(deployResult, null, 2))
+
+      let contractId: string
+      let contractAddress: string
+
+      if (Array.isArray(deployResult)) {
+        const deployEntry = deployResult.find((e: any) => e.type === 'DEPLOY_CONTRACT')
+        if (!deployEntry) throw new Error('No DEPLOY_CONTRACT entry in result array')
+        contractId = deployEntry.result.contractId
+        contractAddress = deployEntry.result.contractAddress
+      } else {
+        contractId = (deployResult as any).contractId
+        contractAddress = (deployResult as any).contractAddress || addressFromContractId(contractId)
+      }
+
+      if (!contractId) throw new Error('No contractId found in deploy result')
+
+      setDeployedContractId(contractId)
+      setDeployedContractAddress(contractAddress)
       setStatus('success')
-    }, 6000)
+    } catch (err: any) {
+      console.error('Deploy escrow failed:', err)
+      setTxError(err?.message || 'Transaction failed')
+      setStatus('form')
+    }
+  }
+
+  const magicLink = deployedContractAddress
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/contract/${deployedContractAddress}`
+    : ''
+
+  const handleCopyLink = async () => {
+    if (magicLink) {
+      await navigator.clipboard.writeText(magicLink)
+    }
   }
 
   return (
@@ -213,7 +294,7 @@ export default function CreateEscrow() {
         <AnimatePresence>
           <motion.div layout style={{ display: 'grid', alignItems: 'center', justifyItems: 'start' }}>
             {status === 'form' && (
-              <motion.div 
+              <motion.div
                 key="formPill"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -240,7 +321,7 @@ export default function CreateEscrow() {
             )}
 
             {status === 'loading' && (
-              <motion.div 
+              <motion.div
                 key="loadingPill"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -267,7 +348,7 @@ export default function CreateEscrow() {
             )}
 
             {status === 'success' && (
-              <motion.div 
+              <motion.div
                 key="successPill"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -303,9 +384,9 @@ export default function CreateEscrow() {
             animate={{ height: 'auto' }}
             exit={{ height: 0 }}
             style={{ overflow: 'hidden' }}
-            transition={{ duration: 0.5, delay: 0.25, ease: [0.25, 1, 0.5, 1] }} 
+            transition={{ duration: 0.5, delay: 0.25, ease: [0.25, 1, 0.5, 1] }}
           >
-            <motion.div 
+            <motion.div
               className={styles.card}
               initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -379,7 +460,7 @@ export default function CreateEscrow() {
                 <div className={styles.monthTextContainer}>
                   <div className={styles.monthText}>
                     <AnimatePresence mode="popLayout" initial={false} custom={monthDirection}>
-                      <motion.span 
+                      <motion.span
                         key={`month-${currentDate.month}`}
                         className={styles.monthName}
                         custom={monthDirection}
@@ -399,7 +480,7 @@ export default function CreateEscrow() {
                     </AnimatePresence>
                     {' '}
                     <AnimatePresence mode="popLayout" initial={false} custom={monthDirection}>
-                      <motion.span 
+                      <motion.span
                         key={`year-${currentDate.year}`}
                         className={styles.yearText}
                         custom={monthDirection}
@@ -435,8 +516,8 @@ export default function CreateEscrow() {
               </div>
               <div className={styles.datePickerContainer} ref={constraintsRef}>
                 <div className={styles.fadeLeft} />
-                <motion.div 
-                  className={styles.datePicker} 
+                <motion.div
+                  className={styles.datePicker}
                   ref={innerRef}
                   style={{ x }}
                   drag="x"
@@ -445,7 +526,6 @@ export default function CreateEscrow() {
                   whileTap={{ cursor: "grabbing" }}
                 >
                     {Array.from({ length: 365 }, (_, index) => {
-                      // Calculate date based on index relative to today
                       const dateObj = new Date()
                       dateObj.setDate(TODAY + index)
                       const dayOfMonth = dateObj.getDate()
@@ -460,8 +540,7 @@ export default function CreateEscrow() {
                           className={`${styles.dateChip} ${dayOfMonth === selectedDay && month === currentDate.month && year === currentDate.year ? styles.dateChipSelected : ''}`}
                           onClick={() => {
                             setSelectedDay(dayOfMonth)
-                            
-                            // Determine direction for animation if clicking a day from a different month
+
                             if (year > currentDate.year || (year === currentDate.year && month > currentDate.month)) {
                               setMonthDirection(1)
                             } else if (year < currentDate.year || (year === currentDate.year && month < currentDate.month)) {
@@ -490,7 +569,7 @@ export default function CreateEscrow() {
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Mission Scope</label>
             <div className={styles.missionScopeContainer}>
-              {/* Dropzone — always visible */}
+              {/* Dropzone */}
               <div
                 className={`${styles.dropzone} ${dragActive ? styles.dropzoneActive : ''}`}
                 onDragEnter={handleDragFile}
@@ -499,10 +578,10 @@ export default function CreateEscrow() {
                 onDrop={handleDropFile}
                 onClick={() => document.getElementById('file-upload')?.click()}
               >
-                <input 
-                  type="file" 
-                  id="file-upload" 
-                  className={styles.fileInputHidden} 
+                <input
+                  type="file"
+                  id="file-upload"
+                  className={styles.fileInputHidden}
                   accept=".pdf,.doc,.docx,.png,.jpeg,.jpg"
                   onChange={handleFileChange}
                 />
@@ -515,10 +594,10 @@ export default function CreateEscrow() {
                 </div>
               </div>
 
-              {/* Uploaded file card — appears below dropzone */}
+              {/* Uploaded file card */}
               <AnimatePresence>
                 {uploadedFile && (
-                  <motion.div 
+                  <motion.div
                     className={styles.uploadedFileCard}
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -529,7 +608,7 @@ export default function CreateEscrow() {
                       <div className={styles.fileInfoLeft}>
                         {uploadedFile.file.type === 'application/pdf' || uploadedFile.file.name.endsWith('.pdf') ? <FilePdf size={24} weight="fill" color="#555" /> :
                          uploadedFile.file.type.includes('image') || uploadedFile.file.name.match(/\.(png|jpe?g)$/i) ? <FileImage size={24} weight="fill" color="#555" /> :
-                         uploadedFile.file.type.includes('word') || uploadedFile.file.name.match(/\.(doc|docx)$/i) ? <FileDoc size={24} weight="fill" color="#555" /> : 
+                         uploadedFile.file.type.includes('word') || uploadedFile.file.name.match(/\.(doc|docx)$/i) ? <FileDoc size={24} weight="fill" color="#555" /> :
                          <FileIcon size={24} weight="fill" color="#555" />}
                         <span className={styles.fileName}>{uploadedFile.file.name}</span>
                       </div>
@@ -543,7 +622,7 @@ export default function CreateEscrow() {
                     {/* Progress Bar */}
                     {uploadedFile.status === 'uploading' && (
                       <div className={styles.progressBarContainer}>
-                        <motion.div 
+                        <motion.div
                           className={styles.progressBarFill}
                           initial={{ width: '0%' }}
                           animate={{ width: `${uploadedFile.progress}%` }}
@@ -556,16 +635,24 @@ export default function CreateEscrow() {
               </AnimatePresence>
             </div>
           </div>
+
+          {txError && (
+            <div className={styles.fieldGroup}>
+              <span className={styles.errorMessage}>{txError}</span>
+            </div>
+          )}
         </div>
 
         {/* CTA Button */}
         <motion.div variants={itemVariants}>
-          {!walletConnected ? (
-          <motion.button 
-            className={`${styles.ctaButton} gradient-hover-btn`} 
+          {!isConnected ? (
+          <motion.button
+            className={`${styles.ctaButton} gradient-hover-btn`}
             type="button"
             disabled={!isFormComplete}
-            onClick={() => setWalletConnected(true)}
+            onClick={() => {
+              alert('Please connect your wallet using the button in the navigation bar.')
+            }}
           >
             Connect Wallet
             <svg width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -574,16 +661,17 @@ export default function CreateEscrow() {
             </svg>
           </motion.button>
         ) : (
-          <motion.button 
+          <motion.button
             className={`${styles.ctaButtonConfirm} gradient-hover-btn`}
             type="button"
+            disabled={!isFormComplete}
             initial="initial"
             whileHover="hover"
             onClick={handleConfirm}
           >
             <LockSimple size={16} weight="fill" color="#000" />
             <div className={styles.rollOverContainer}>
-              <motion.span 
+              <motion.span
                 className={styles.rollOverText}
                 variants={{
                   initial: { y: 0 },
@@ -593,7 +681,7 @@ export default function CreateEscrow() {
               >
                 Confirm & Lock Funds
               </motion.span>
-              <motion.span 
+              <motion.span
                 className={styles.rollOverTextHover}
                 variants={{
                   initial: { y: "100%" },
@@ -620,32 +708,37 @@ export default function CreateEscrow() {
           style={{ overflow: 'hidden' }}
           transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
         >
-          <motion.div 
+          <motion.div
             className={styles.successCard}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.4 }}
           >
             <div className={styles.successText}>
-              Envoyez ce lien au freelance pour qu'il dépose sa caution et active le contrat.
+              Envoyez ce lien au freelance pour qu&apos;il dépose sa caution et active le contrat.
             </div>
-            
+
             <div className={styles.linkContainer}>
-              <span className={styles.linkText}>http://localhost:5173/escrow/ESC-MLWAJ7YH</span>
-              <button className={styles.copyButton} title="Copier le lien">
+              <span className={styles.linkText}>{magicLink || 'Generating...'}</span>
+              <button className={styles.copyButton} title="Copier le lien" onClick={handleCopyLink}>
                 <Copy size={16} />
               </button>
             </div>
 
             <div className={styles.successButtons}>
-              <button 
-                className={`${styles.btnVoirContrat} gradient-hover-btn`} 
-                onClick={() => router.push('/contract/1EbUwQNSwW')}
+              <button
+                className={`${styles.btnVoirContrat} gradient-hover-btn`}
+                onClick={() => router.push(`/contract/${deployedContractAddress}`)}
               >
                 Voir le contrat <ArrowRight size={14} weight="bold" />
               </button>
-              
-              <button className={styles.btnCreerUnAutre} onClick={() => setStatus('form')}>
+
+              <button className={styles.btnCreerUnAutre} onClick={() => {
+                setStatus('form')
+                setDeployedContractId('')
+                setDeployedContractAddress('')
+                setTxError(null)
+              }}>
                 Crée un autre
               </button>
             </div>

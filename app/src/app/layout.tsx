@@ -1,5 +1,6 @@
 import '@/styles/globals.css'
 import React from 'react'
+import Providers from '@/components/Providers'
 
 export const metadata = {
   title: "Konvrtr - Escrow Platform",
@@ -22,8 +23,11 @@ export default function RootLayout({
         />
       </head>
       <body>
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
 }
+

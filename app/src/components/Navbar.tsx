@@ -2,12 +2,22 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
+import { useWallet } from '@alephium/web3-react'
+import { AlephiumConnectButton } from '@alephium/web3-react'
 import styles from '@/styles/Navbar.module.css'
 import { navbarVariants } from '@/utils/animations'
 
+function truncateAddress(address: string): string {
+  if (address.length <= 12) return address
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
+}
+
 export default function Navbar() {
+  const { connectionStatus, account } = useWallet()
+  const isConnected = connectionStatus === 'connected'
+
   return (
-    <motion.nav 
+    <motion.nav
       className={styles.navbar}
       variants={navbarVariants}
       initial="hidden"
@@ -38,13 +48,32 @@ export default function Navbar() {
         </div>
       </div>
       <div className={styles.right}>
-        <button className={`${styles.connectButton} gradient-hover-btn`}>
-          <span>Connect Wallet</span>
-          <svg width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 0.5L5.5 7L0 13.5" stroke="black" strokeWidth="1.5"/>
-            <path d="M4.5 0.5L10 7L4.5 13.5" stroke="black" strokeWidth="1.5"/>
-          </svg>
-        </button>
+        {isConnected && account ? (
+          <AlephiumConnectButton.Custom>
+            {({ disconnect }) => (
+              <button
+                className={`${styles.connectButton} ${styles.connectedButton}`}
+                onClick={disconnect}
+                title="Click to disconnect"
+              >
+                <span className={styles.connectedDot} />
+                <span>{truncateAddress(account.address)}</span>
+              </button>
+            )}
+          </AlephiumConnectButton.Custom>
+        ) : (
+          <AlephiumConnectButton.Custom>
+            {({ show }) => (
+              <button className={`${styles.connectButton} gradient-hover-btn`} onClick={show}>
+                <span>Connect Wallet</span>
+                <svg width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0 0.5L5.5 7L0 13.5" stroke="black" strokeWidth="1.5"/>
+                  <path d="M4.5 0.5L10 7L4.5 13.5" stroke="black" strokeWidth="1.5"/>
+                </svg>
+              </button>
+            )}
+          </AlephiumConnectButton.Custom>
+        )}
       </div>
     </motion.nav>
   )

@@ -11,11 +11,12 @@ export default function TestModalPage() {
       <div className={styles.backgroundImage} />
       <Navbar />
       <main className={styles.main}>
-        <MagicLinkModal 
-          contractId="MLWAJ7YH" 
-          onConnectWallet={() => console.log('Connect Wallet clicked')} 
+        <MagicLinkModal
+          contractId="MLWAJ7YH"
+          onClose={() => console.log('Modal closed')}
         />
       </main>
     </div>
   );
 }
+
