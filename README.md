@@ -1,4 +1,4 @@
-# AlphTrust - Escrow Decentralisé sur Alephium
+# Trove - Escrow Decentralisé sur Alephium
 
 Plateforme d'escrow trustless avec système de réputation on-chain, construite sur la blockchain Alephium.
 
@@ -32,13 +32,26 @@ Monorepo **yarn workspaces** avec 3 modules :
 
 ## Lancement rapide (une seule commande)
 
-Si le devnet tourne déjà :
+### Devnet (local)
 
 ```bash
 yarn go
 ```
 
-Cette commande exécute dans l'ordre : `compile` → `deploy` → `build:contracts` → `dev`
+Lance le devnet Docker + compile + déploie + build + lance l'app. Tout-en-un.
+
+### Testnet
+
+```bash
+export PRIVATE_KEYS="ta_clé_privée"
+yarn go:testnet
+```
+
+Ou si les contrats sont déjà déployés :
+
+```bash
+yarn dev:testnet
+```
 
 Le frontend sera disponible sur **http://localhost:3000**.
 
@@ -57,7 +70,7 @@ yarn install
 ### Étape 2 — Lancer le devnet local
 
 ```bash
-cd alephium-stack && make start-devnet && cd ..
+yarn devnet:start
 ```
 
 Attendre que le node soit healthy (~30 secondes). Vérifier avec :
@@ -112,28 +125,18 @@ Toutes les commandes se lancent depuis la **racine** du projet :
 
 ### Devnet (Docker)
 
-Depuis le dossier `alephium-stack/` :
-
 | Commande | Description |
 |----------|-------------|
-| `make start-devnet` | Démarre le devnet (node + explorer + PostgreSQL + pgAdmin) |
-| `make stop-devnet` | Arrête le devnet |
-| `make restart-devnet` | Redémarre le devnet |
-
-Ou directement depuis `alephium-stack/devnet/` :
-
-```bash
-docker compose up -d       # démarrer
-docker compose down         # arrêter
-docker compose ps           # voir le statut des services
-docker compose logs -f      # voir les logs en temps réel
-```
+| `yarn devnet:start` | Démarre le devnet (node + explorer + PostgreSQL + pgAdmin) |
+| `yarn devnet:stop` | Arrête le devnet |
 
 ### Tout-en-un
 
 | Commande | Description |
 |----------|-------------|
-| `yarn go` | Compile + déploie + build TS + lance le frontend |
+| `yarn go` | Devnet + compile + déploie + build TS + lance le frontend |
+| `yarn go:testnet` | Compile + déploie testnet + build TS + lance le frontend |
+| `yarn dev:testnet` | Lance le frontend sur testnet (sans redéployer) |
 
 ---
 
@@ -177,12 +180,12 @@ yarn install
 Le devnet n'est pas lancé :
 
 ```bash
-cd alephium-stack && make start-devnet && cd ..
+yarn devnet:start
 ```
 
 ### Le frontend affiche des adresses vides
 
-Les contracts n'ont pas été déployés. Le fichier `contracts/deployments/.deployments.devnet.json` est lu par `app/next.config.js` au démarrage. Relancer :
+Les contracts n'ont pas été déployés. Les adresses sont lues dynamiquement depuis `contracts/deployments/.deployments.{network}.json` via `loadDeployments()`. Relancer :
 
 ```bash
 yarn setup
@@ -194,29 +197,31 @@ yarn dev
 Un autre service utilise les ports requis. Arrêter les containers existants :
 
 ```bash
-cd alephium-stack && make stop-devnet && cd ..
+yarn devnet:stop
 ```
 
 ---
 
-## Déploiement Testnet / Mainnet
+## Déploiement Testnet
 
-### 1. Configurer les variables d'environnement
-
-```bash
-export NODE_URL=https://node.testnet.alephium.org
-export PRIVATE_KEYS=your_private_key_here
-```
-
-### 2. Déployer
-
-```bash
-npx --yes @alephium/cli deploy --network testnet
-```
-
-### 3. Obtenir des ALPH de test
+### 1. Obtenir des ALPH de test
 
 Tokens testnet disponibles via le [Faucet Alephium](https://faucet.testnet.alephium.org/).
+
+### 2. Déployer et lancer
+
+```bash
+export PRIVATE_KEYS="ta_clé_privée"
+yarn go:testnet
+```
+
+Les adresses des contrats sont automatiquement lues depuis les fichiers de déploiement (`contracts/deployments/.deployments.testnet.json`) via `loadDeployments()`. Pas besoin de les hardcoder.
+
+### 3. Relancer sans redéployer
+
+```bash
+yarn dev:testnet
+```
 
 ---
 

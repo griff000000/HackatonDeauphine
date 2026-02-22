@@ -15,9 +15,9 @@
     "start": "npm run start --workspace=my-dapp",
     "build:app": "npm run build --workspace=my-dapp",
     "setup": "yarn compile && yarn deploy && yarn build:contracts",
-    "devnet:start": "npx @alephium/cli devnet start",
-    "devnet:stop": "npx @alephium/cli devnet stop",
-    "go": "npx @alephium/cli devnet start && yarn compile && yarn deploy && yarn build:contracts && yarn dev",
+    "devnet:start": "docker compose -f alephium-stack/devnet/docker-compose.yml up -d",
+    "devnet:stop": "docker compose -f alephium-stack/devnet/docker-compose.yml down",
+    "go": "yarn devnet:start && yarn compile && yarn deploy && yarn build:contracts && yarn dev",
     "go:testnet": "yarn compile && PRIVATE_KEYS=$PRIVATE_KEYS npx --yes @alephium/cli deploy --network testnet -w contracts && yarn build:contracts && NEXT_PUBLIC_NETWORK=testnet yarn dev",
     "dev:testnet": "NEXT_PUBLIC_NETWORK=testnet yarn dev"
   },
