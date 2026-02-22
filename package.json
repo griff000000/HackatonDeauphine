@@ -15,7 +15,9 @@
     "start": "npm run start --workspace=my-dapp",
     "build:app": "npm run build --workspace=my-dapp",
     "setup": "yarn compile && yarn deploy && yarn build:contracts",
-    "go": "yarn compile && yarn deploy && yarn build:contracts && yarn dev"
+    "go": "yarn compile && yarn deploy && yarn build:contracts && yarn dev",
+    "go:testnet": "yarn compile && PRIVATE_KEYS=$PRIVATE_KEYS npx --yes @alephium/cli deploy --network testnet -w contracts && yarn build:contracts && NEXT_PUBLIC_NETWORK=testnet yarn dev",
+    "dev:testnet": "NEXT_PUBLIC_NETWORK=testnet yarn dev"
   },
   "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
 }
