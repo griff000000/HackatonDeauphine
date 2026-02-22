@@ -24,6 +24,10 @@
   <img src="app/public/screen2.png" alt="Trove - Screen 2" width="700">
 </p>
 
+<p align="center">
+  <img src="app/public/screen3.png" alt="Trove - Screen 3" width="700">
+</p>
+
 ---
 
 ## The Problem
