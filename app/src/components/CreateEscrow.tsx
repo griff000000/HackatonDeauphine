@@ -371,7 +371,7 @@ export default function CreateEscrow() {
                   </svg>
                 </div>
                 <p className={styles.headerText}>
-                  Transaction en cours<span className={styles.loadingDots}></span>
+                  Transaction in progress<span className={styles.loadingDots}></span>
                 </p>
               </motion.div>
             )}
@@ -397,7 +397,7 @@ export default function CreateEscrow() {
                   </defs>
                 </svg>
               </div>
-              <p className={styles.headerText}>Fonds verrouillés !</p>
+              <p className={styles.headerText}>Funds locked!</p>
             </motion.div>
           )}
           </motion.div>
@@ -430,7 +430,7 @@ export default function CreateEscrow() {
               <input
                 type="text"
                 className={styles.input}
-                placeholder="ex: Refonte UI/UX Application Mobile"
+                placeholder="e.g.: Mobile App UI/UX Redesign"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
               />
@@ -747,12 +747,12 @@ export default function CreateEscrow() {
             transition={{ duration: 0.4, delay: 0.4 }}
           >
             <div className={styles.successText}>
-              Envoyez ce lien au freelance pour qu&apos;il dépose sa caution et active le contrat.
+              Send this link to the freelancer so they can deposit their collateral and activate the contract.
             </div>
 
             <div className={styles.linkContainer}>
               <span className={styles.linkText}>{magicLink || 'Generating...'}</span>
-              <button className={styles.copyButton} title="Copier le lien" onClick={handleCopyLink}>
+              <button className={styles.copyButton} title="Copy link" onClick={handleCopyLink}>
                 <Copy size={16} />
               </button>
             </div>
@@ -762,7 +762,7 @@ export default function CreateEscrow() {
                 className={`${styles.btnVoirContrat} gradient-hover-btn`}
                 onClick={() => router.push(`/contract/${deployedContractAddress}`)}
               >
-                Voir le contrat <ArrowRight size={14} weight="bold" />
+                View contract <ArrowRight size={14} weight="bold" />
               </button>
 
               <button className={styles.btnCreerUnAutre} onClick={() => {
@@ -771,7 +771,7 @@ export default function CreateEscrow() {
                 setDeployedContractAddress('')
                 setTxError(null)
               }}>
-                Crée un autre
+                Create another
               </button>
             </div>
           </motion.div>

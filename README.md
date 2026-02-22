@@ -1,114 +1,154 @@
-# AlphTrust - Alephium dApp
+# AlphTrust - Escrow Decentralisé sur Alephium
 
-Monorepo pour le projet AlphTrust, construit sur la blockchain Alephium avec **yarn workspaces**.
+Plateforme d'escrow trustless avec système de réputation on-chain, construite sur la blockchain Alephium.
+
+Un client dépose des fonds, un freelancer dépose une caution proportionnelle à son score de confiance, et un arbitre tranche en cas de litige. Tout est transparent et vérifiable on-chain.
+
+---
+
+## Architecture du projet
+
+Monorepo **yarn workspaces** avec 3 modules :
 
 | Dossier | Description |
 |---------|-------------|
-| `contracts/` | Smart contracts en Ralph + scripts de déploiement |
+| `contracts/` | Smart contracts en Ralph + scripts de déploiement + tests |
 | `app/` | Frontend Next.js (React + TypeScript) |
-| `alephium-stack/` | Configuration Docker pour les nodes Alephium |
-| `docs/` | Documentation technique du projet |
+| `alephium-stack/` | Docker Compose pour le node Alephium local (devnet) |
+| `docs/` | Documentation technique complète |
 
 ---
 
 ## Prérequis
 
-- [Node.js](https://nodejs.org/) >= 18
-- [Yarn](https://classic.yarnpkg.com/) v1 (`npm install -g yarn`)
-- [Docker](https://www.docker.com/) et Docker Compose
+| Outil | Version minimum | Installation |
+|-------|----------------|--------------|
+| Node.js | >= 18 | [nodejs.org](https://nodejs.org/) |
+| Yarn | v1 | `npm install -g yarn` |
+| Docker | récent | [docker.com](https://www.docker.com/) |
+| Docker Compose | inclus avec Docker Desktop | - |
 
 ---
 
-## Setup rapide (depuis zéro)
+## Lancement rapide (une seule commande)
 
-### 1. Cloner le repo
+Si le devnet tourne déjà :
+
+```bash
+yarn go
+```
+
+Cette commande exécute dans l'ordre : `compile` → `deploy` → `build:contracts` → `dev`
+
+Le frontend sera disponible sur **http://localhost:3000**.
+
+---
+
+## Lancement complet depuis zéro
+
+### Étape 1 — Cloner et installer
 
 ```bash
 git clone <repo-url>
 cd HackatonDeauphine
-```
-
-### 2. Lancer le devnet local
-
-```bash
-cd alephium-stack/devnet
-docker compose up -d
-```
-
-Attendre que le node soit healthy (~30s) :
-
-```bash
-docker compose ps
-```
-
-Le node tourne sur `http://127.0.0.1:22973`. Un explorer est dispo sur `http://localhost:23000`.
-
-### 3. Installer les dépendances
-
-```bash
-cd ../..   # retour à la racine
 yarn install
 ```
 
-### 4. Compiler les smart contracts
+### Étape 2 — Lancer le devnet local
 
 ```bash
-yarn compile
+cd alephium-stack && make start-devnet && cd ..
 ```
 
-Cela génère les artifacts Ralph dans `contracts/artifacts/`.
-
-### 5. Déployer les contracts sur le devnet
+Attendre que le node soit healthy (~30 secondes). Vérifier avec :
 
 ```bash
-yarn deploy
+curl -s http://127.0.0.1:22973/infos/self-clique | head -c 50
 ```
 
-Le contract ID et l'adresse seront affichés dans la console.
+Si ça retourne du JSON, le node est prêt.
 
-### 6. Builder le package contracts (TypeScript)
+**Services disponibles :**
+
+| Service | URL |
+|---------|-----|
+| Node Alephium (API) | http://127.0.0.1:22973 |
+| Node Swagger (docs API) | http://127.0.0.1:22973/docs |
+| Explorer Frontend | http://localhost:23000 |
+| Explorer Backend API | http://127.0.0.1:9090 |
+| Explorer Swagger | http://127.0.0.1:9090/docs |
+| pgAdmin | http://localhost:5050 |
+
+### Étape 3 — Compiler, déployer, lancer
 
 ```bash
-yarn build:contracts
+yarn go
 ```
 
-Cela compile les artifacts TypeScript dans `contracts/dist/` pour que le frontend puisse les importer via le module `my-contracts`.
-
-### 7. Lancer le frontend
-
-```bash
-yarn dev
-```
-
-L'app tourne sur `http://localhost:3000`.
+C'est tout. L'app tourne sur **http://localhost:3000**.
 
 ---
 
-## Commandes utiles
+## Commandes détaillées
 
 Toutes les commandes se lancent depuis la **racine** du projet :
 
+### Smart contracts
+
 | Commande | Description |
 |----------|-------------|
-| `yarn install` | Installer toutes les dépendances (workspaces) |
-| `yarn compile` | Compiler les contracts Ralph -> artifacts |
-| `yarn deploy` | Déployer les contracts sur le devnet |
-| `yarn build:contracts` | Builder le package TypeScript des contracts |
-| `yarn test` | Lancer les tests des contracts |
-| `yarn dev` | Lancer le frontend Next.js en dev |
+| `yarn compile` | Compile les contracts Ralph → génère les artifacts dans `contracts/artifacts/` |
+| `yarn deploy` | Déploie les contracts sur le devnet (node doit tourner) |
+| `yarn build:contracts` | Compile les artifacts TypeScript dans `contracts/dist/` |
+| `yarn test` | Lance les tests unitaires des contracts (Jest) |
+| `yarn setup` | Compile + déploie + build TypeScript (sans lancer le frontend) |
+
+### Frontend
+
+| Commande | Description |
+|----------|-------------|
+| `yarn dev` | Lance le frontend Next.js en mode développement (port 3000) |
 | `yarn build:app` | Build de production du frontend |
+
+### Devnet (Docker)
+
+Depuis le dossier `alephium-stack/` :
+
+| Commande | Description |
+|----------|-------------|
+| `make start-devnet` | Démarre le devnet (node + explorer + PostgreSQL + pgAdmin) |
+| `make stop-devnet` | Arrête le devnet |
+| `make restart-devnet` | Redémarre le devnet |
+
+Ou directement depuis `alephium-stack/devnet/` :
+
+```bash
+docker compose up -d       # démarrer
+docker compose down         # arrêter
+docker compose ps           # voir le statut des services
+docker compose logs -f      # voir les logs en temps réel
+```
+
+### Tout-en-un
+
+| Commande | Description |
+|----------|-------------|
+| `yarn go` | Compile + déploie + build TS + lance le frontend |
 
 ---
 
 ## Wallet devnet
 
-Pour importer le wallet de dev, utiliser ce mnemonic dans l'extension Alephium :
+Pour interagir avec l'app en local, importer ce wallet dans l'[extension Alephium](https://alephium.org/#wallets) :
 
+**Mnemonic :**
 ```
 vault alarm sad mass witness property virus style good flower rice alpha viable evidence run glare pretty scout evil judge enroll refuse another lava
 ```
 
-Ce wallet a 4'000'000 ALPH pre-alloués sur le devnet.
+Ce wallet a **4'000'000 ALPH** pre-alloués sur le devnet (4 adresses).
+
+Configurer l'extension sur le réseau **custom** avec l'URL du node : `http://127.0.0.1:22973`
 
 ---
 
@@ -116,7 +156,7 @@ Ce wallet a 4'000'000 ALPH pre-alloués sur le devnet.
 
 ### `Failed to load contract artifact ... ENOENT`
 
-Le fichier `.project.json` dans `contracts/` est désynchronisé. Supprimer et recompiler :
+Le fichier `.project.json` est désynchronisé :
 
 ```bash
 rm contracts/.project.json
@@ -125,7 +165,7 @@ yarn compile
 
 ### `Module not found: Can't resolve 'my-contracts'`
 
-Le package TypeScript des contracts n'est pas buildé. Lancer :
+Le package TypeScript des contracts n'est pas buildé :
 
 ```bash
 yarn build:contracts
@@ -134,38 +174,59 @@ yarn install
 
 ### Le deploy échoue avec une erreur de connexion
 
-Le devnet n'est pas lancé. Démarrer le node :
+Le devnet n'est pas lancé :
 
 ```bash
-cd alephium-stack/devnet
-docker compose up -d
+cd alephium-stack && make start-devnet && cd ..
+```
+
+### Le frontend affiche des adresses vides
+
+Les contracts n'ont pas été déployés. Le fichier `contracts/deployments/.deployments.devnet.json` est lu par `app/next.config.js` au démarrage. Relancer :
+
+```bash
+yarn setup
+yarn dev
+```
+
+### Docker : port already in use
+
+Un autre service utilise les ports requis. Arrêter les containers existants :
+
+```bash
+cd alephium-stack && make stop-devnet && cd ..
 ```
 
 ---
 
-## Testnet / Mainnet
+## Déploiement Testnet / Mainnet
 
-Configurer les variables d'environnement avant de déployer :
+### 1. Configurer les variables d'environnement
 
 ```bash
 export NODE_URL=https://node.testnet.alephium.org
 export PRIVATE_KEYS=your_private_key_here
 ```
 
-Puis déployer avec le flag réseau :
+### 2. Déployer
 
 ```bash
 npx --yes @alephium/cli deploy --network testnet
 ```
 
-Tokens testnet disponibles via le [Faucet](https://docs.alephium.org/infrastructure/public-services/#testnet-faucet).
+### 3. Obtenir des ALPH de test
+
+Tokens testnet disponibles via le [Faucet Alephium](https://faucet.testnet.alephium.org/).
 
 ---
 
 ## Documentation
 
-- [docs/FRONTEND_GUIDE.md](docs/FRONTEND_GUIDE.md) - **Guide frontend** : comment communiquer avec les contrats, exemples de code, pièges à éviter
-- [docs/CONTRACTS_API.md](docs/CONTRACTS_API.md) - Documentation de toutes les fonctions des contrats (params, checks, comportement)
-- [docs/PROJECT.md](docs/PROJECT.md) - Roadmap backend AlphTrust
-- [docs/ALEPHIUM-TECHNICAL-ONBOARDING.md](docs/ALEPHIUM-TECHNICAL-ONBOARDING.md) - Guide technique Alephium & Ralph
-- [Documentation officielle Alephium](https://docs.alephium.org/dapps/)
+| Document | Description |
+|----------|-------------|
+| [docs/FRONTEND_GUIDE.md](docs/FRONTEND_GUIDE.md) | Comment communiquer avec les contracts depuis le frontend, exemples de code |
+| [docs/CONTRACTS_API.md](docs/CONTRACTS_API.md) | API complète des contracts : fonctions, paramètres, comportement |
+| [docs/PROJECT.md](docs/PROJECT.md) | Roadmap du projet |
+| [docs/ALEPHIUM-TECHNICAL-ONBOARDING.md](docs/ALEPHIUM-TECHNICAL-ONBOARDING.md) | Guide technique Alephium & Ralph pour débutants |
+| [PLAN.md](PLAN.md) | Plan d'implémentation détaillé des contracts Escrow + TrustRegistry |
+| [Documentation officielle Alephium](https://docs.alephium.org/dapps/) | Docs officielles |

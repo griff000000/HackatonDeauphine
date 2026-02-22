@@ -39,11 +39,11 @@ interface ContractViewProps {
 }
 
 const STATUS_LABELS: Record<number, string> = {
-  0: 'En attente de caution',
+  0: 'Waiting for deposit',
   1: 'Mission active',
-  2: 'Travail livré',
-  3: 'Litige en cours',
-  4: 'Terminé'
+  2: 'Work delivered',
+  3: 'Dispute in progress',
+  4: 'Completed'
 }
 
 function truncateAddress(address: string): string {
@@ -53,12 +53,12 @@ function truncateAddress(address: string): string {
 
 function formatAlph(attoAlph: bigint): string {
   const alph = Number(attoAlph) / 1e18
-  return alph.toLocaleString('fr-FR', { maximumFractionDigits: 2 })
+  return alph.toLocaleString('en-US', { maximumFractionDigits: 2 })
 }
 
 function formatDate(timestampMs: bigint): string {
   const date = new Date(Number(timestampMs))
-  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return date.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 interface EscrowState {
@@ -94,11 +94,11 @@ export default function ContractView({ contractId }: ContractViewProps) {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const disputeOptions = [
-    { label: 'Qualité du travail insuffisante', icon: <FileX size={16} /> },
-    { label: 'Retard de livraison important', icon: <Clock size={16} /> },
-    { label: 'Cahier des charges non respecté', icon: <WarningCircle size={16} /> },
-    { label: 'Communication insuffisante', icon: <ChatCenteredDots size={16} /> },
-    { label: 'Autre raison', icon: <DotsThreeOutline size={16} /> },
+    { label: 'Insufficient work quality', icon: <FileX size={16} /> },
+    { label: 'Significant delivery delay', icon: <Clock size={16} /> },
+    { label: 'Specifications not met', icon: <WarningCircle size={16} /> },
+    { label: 'Insufficient communication', icon: <ChatCenteredDots size={16} /> },
+    { label: 'Other reason', icon: <DotsThreeOutline size={16} /> },
   ]
   const [deliverLink, setDeliverLink] = useState('')
   const [disputeReason, setDisputeReason] = useState('')
@@ -179,7 +179,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
       if (err?.message?.includes('not found') || err?.message?.includes('KeyNotFound')) {
         if (!isRefresh) setFetchError('CONTRACT_COMPLETED')
       } else {
-        if (!isRefresh) setFetchError('Contrat introuvable ou erreur réseau.')
+        if (!isRefresh) setFetchError('Contract not found or network error.')
       }
     } finally {
       if (!isRefresh) setLoading(false)
@@ -361,18 +361,18 @@ export default function ContractView({ contractId }: ContractViewProps) {
               <div style={{ padding: 8, position: 'relative', overflow: 'hidden', borderRadius: 48, flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', gap: 100, display: 'inline-flex' }}>
                 <Check size={24} weight="bold" color="white" />
               </div>
-              <div style={{ color: '#888888', fontSize: 14, fontFamily: 'Inter', fontWeight: '500', lineHeight: '20px', wordWrap: 'break-word' }}>Contrat terminé !</div>
+              <div style={{ color: '#888888', fontSize: 14, fontFamily: 'Inter', fontWeight: '500', lineHeight: '20px', wordWrap: 'break-word' }}>Contract completed!</div>
             </div>
             <div style={{ width: 482, padding: 32, background: '#1A1A1A', overflow: 'hidden', borderRadius: 24, outline: '1px rgba(255, 255, 255, 0.12) solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 24, display: 'flex' }}>
               <div style={{ alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 24, display: 'flex' }}>
                 <div style={{ alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 24, display: 'flex' }}>
                   <div style={{ alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 12, display: 'flex' }}>
                     <div style={{ width: 370, textAlign: 'center', color: '#888888', fontSize: 14, fontFamily: 'Inter', fontWeight: '500', lineHeight: '20px', wordWrap: 'break-word' }}>
-                      Ce contrat a été exécuté avec succès. Les fonds ont été libérés et le contrat a été détruit on-chain
+                      This contract was executed successfully. Funds have been released and the contract has been destroyed on-chain.
                     </div>
                   </div>
                   <div style={{ alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', gap: 12, display: 'flex' }}>
-                    <div style={{ color: '#888888', fontSize: 14, fontFamily: 'Inter', fontWeight: '500', lineHeight: '20px', wordWrap: 'break-word' }}>Adresse du contrat</div>
+                    <div style={{ color: '#888888', fontSize: 14, fontFamily: 'Inter', fontWeight: '500', lineHeight: '20px', wordWrap: 'break-word' }}>Contract address</div>
                     <div style={{ alignSelf: 'stretch', padding: 12, background: '#212121', overflow: 'hidden', borderRadius: 16, outline: '1px rgba(255, 255, 255, 0.12) solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 100, display: 'flex' }}>
                       <div style={{ color: 'white', fontSize: 14, fontFamily: 'Inter', fontWeight: '500', lineHeight: '20px', wordWrap: 'break-word' }}>{contractId}</div>
                     </div>
@@ -381,7 +381,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
               </div>
               <div style={{ alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 12, display: 'flex' }}>
                 <a href="/" style={{ alignSelf: 'stretch', paddingLeft: 8, paddingRight: 16, overflow: 'hidden', borderRadius: 1024, justifyContent: 'center', alignItems: 'center', gap: 8, display: 'inline-flex', textDecoration: 'none' }}>
-                  <span style={{ color: '#888888', fontSize: 12, fontFamily: 'Inter', fontWeight: '500', lineHeight: '16px', wordWrap: 'break-word' }}>Retour à l&apos;accueil</span>
+                  <span style={{ color: '#888888', fontSize: 12, fontFamily: 'Inter', fontWeight: '500', lineHeight: '16px', wordWrap: 'break-word' }}>Back to home</span>
                 </a>
               </div>
             </div>
@@ -414,7 +414,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                 <div className={styles.statusPillDark}>
                   {statusNum < 4 && <div className={styles.statusIconSpinner} />}
                   {statusNum === 4 && <Check size={14} weight="bold" color="#4AEDC4" />}
-                  <span className={styles.statusTextDark}>{STATUS_LABELS[statusNum] || 'Inconnu'}</span>
+                  <span className={styles.statusTextDark}>{STATUS_LABELS[statusNum] || 'Unknown'}</span>
                 </div>
                 <span className={styles.contractIdDark}>#{contractId.slice(0, 8).toUpperCase()}</span>
               </div>
@@ -426,7 +426,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                 <div className={styles.amountsVerticalContainer}>
                   <div className={styles.amountBlockDark}>
                     <div className={styles.amountHeaderRow}>
-                      <span className={styles.amountTitleDark}>Montant contrat + Caution Requise</span>
+                      <span className={styles.amountTitleDark}>Contract Amount + Required Collateral</span>
                       <div className={styles.alphBadgeDark}>
                         <div className={styles.alphIconOrange}>
                            <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -452,7 +452,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
 
                   <div className={styles.amountBlockDark}>
                     <div className={styles.amountHeaderRow}>
-                      <span className={styles.amountTitleDark}>Total Coffre</span>
+                      <span className={styles.amountTitleDark}>Total Vault</span>
                       <div className={styles.alphBadgeDark}>
                         <div className={styles.alphIconOrange}>
                            <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -490,7 +490,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     <div className={styles.stakeholderLeftDark}>
                        <div className={styles.stakeholderAvatarPlaceholder} />
                        <span className={styles.stakeholderRoleDark}>Client</span>
-                       {isClient && <span className={styles.trustScoreMuted}>(vous)</span>}
+                       {isClient && <span className={styles.trustScoreMuted}>(you)</span>}
                     </div>
                     <span className={styles.stakeholderAddressDark} title={escrowState.client}>
                       {truncateAddress(escrowState.client)}
@@ -501,7 +501,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     <div className={styles.stakeholderLeftDark}>
                        <div className={styles.stakeholderAvatarFreelance} />
                        <span className={styles.stakeholderRoleDark}>Freelance</span>
-                       {isFreelancer && <span className={styles.trustScoreMuted}>(vous)</span>}
+                       {isFreelancer && <span className={styles.trustScoreMuted}>(you)</span>}
                        <span className={styles.trustScoreMuted}>Trust score - {trustScore?.toString() || '50'}</span>
                     </div>
                     <span className={styles.stakeholderAddressDark} title={escrowState.freelancer}>
@@ -512,8 +512,8 @@ export default function ContractView({ contractId }: ContractViewProps) {
                   <div className={styles.stakeholderRowDark}>
                     <div className={styles.stakeholderLeftDark}>
                        <div className={styles.stakeholderAvatarArbitre} />
-                       <span className={styles.stakeholderRoleDark}>Arbitre</span>
-                       {isArbiter && <span className={styles.trustScoreMuted}>(vous)</span>}
+                       <span className={styles.stakeholderRoleDark}>Arbiter</span>
+                       {isArbiter && <span className={styles.trustScoreMuted}>(you)</span>}
                     </div>
                     <span className={styles.stakeholderAddressDark} title={escrowState.arbiter}>
                       {truncateAddress(escrowState.arbiter)}
@@ -571,7 +571,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                 {/* Documents / CDC */}
                 {escrowState.cdcHash && (
                   <div className={styles.deadlineSectionDark} style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px' }}>
-                    <span className={styles.deadlineLabelDark}>Cahier des Charges</span>
+                    <span className={styles.deadlineLabelDark}>Specifications</span>
                     <a
                       href={`https://gateway.pinata.cloud/ipfs/${escrowState.cdcHash}`}
                       target="_blank"
@@ -592,14 +592,14 @@ export default function ContractView({ contractId }: ContractViewProps) {
                       className="gradient-hover-btn"
                     >
                       <FilePdf size={18} weight="bold" />
-                      Voir le document
+                      View document
                     </a>
                   </div>
                 )}
 
                 {escrowState.deliverableLink && (
                   <div className={styles.deadlineSectionDark}>
-                    <span className={styles.deadlineLabelDark}>Livrable</span>
+                    <span className={styles.deadlineLabelDark}>Deliverable</span>
                     <a href={escrowState.deliverableLink} target="_blank" rel="noopener noreferrer" style={{ color: '#4AEDC4', fontSize: '13px', wordBreak: 'break-all' }}>
                       {escrowState.deliverableLink}
                     </a>
@@ -608,19 +608,19 @@ export default function ContractView({ contractId }: ContractViewProps) {
 
                 {escrowState.disputeReason && (
                   <div className={styles.deadlineSectionDark}>
-                    <span className={styles.deadlineLabelDark}>Motif du litige</span>
+                    <span className={styles.deadlineLabelDark}>Dispute reason</span>
                     <p style={{ color: '#ef4444', fontSize: '13px' }}>{escrowState.disputeReason}</p>
                   </div>
                 )}
                 {escrowState.disputeEvidence && (
                   <div className={styles.deadlineSectionDark}>
-                    <span className={styles.deadlineLabelDark}>Preuve soumise</span>
+                    <span className={styles.deadlineLabelDark}>Submitted evidence</span>
                     <p style={{ color: '#888', fontSize: '13px' }}>{escrowState.disputeEvidence}</p>
                   </div>
                 )}
                 {escrowState.disputeJustification && (
                   <div className={styles.deadlineSectionDark}>
-                    <span className={styles.deadlineLabelDark}>Décision de l&apos;arbitre</span>
+                    <span className={styles.deadlineLabelDark}>Arbiter&apos;s decision</span>
                     <p style={{ color: '#4AEDC4', fontSize: '13px' }}>{escrowState.disputeJustification}</p>
                   </div>
                 )}
@@ -641,9 +641,9 @@ export default function ContractView({ contractId }: ContractViewProps) {
 
                 <div className={styles.magicLinkBox}>
                   <span className={styles.magicLinkText} title={magicLinkUrl}>
-                    {magicLinkUrl ? (magicLinkUrl.length > 30 ? magicLinkUrl.substring(0, 27) + '...' : magicLinkUrl) : 'Chargement...'}
+                    {magicLinkUrl ? (magicLinkUrl.length > 30 ? magicLinkUrl.substring(0, 27) + '...' : magicLinkUrl) : 'Loading...'}
                   </span>
-                  <button className={styles.magicLinkCopyBtn} onClick={handleCopyLink} title="Copier le lien">
+                  <button className={styles.magicLinkCopyBtn} onClick={handleCopyLink} title="Copy link">
                     {isCopied ? (
                       <Check size={16} color="#48AC67" weight="bold" />
                     ) : (
@@ -660,20 +660,20 @@ export default function ContractView({ contractId }: ContractViewProps) {
                 <div className={styles.statusPillDark}>
                   {statusNum < 4 && <div className={styles.statusIconSpinner} />}
                   {statusNum === 4 && <Check size={14} weight="bold" color="#4AEDC4" />}
-                  <span className={styles.statusTextDark}>{STATUS_LABELS[statusNum] || 'Inconnu'}</span>
+                  <span className={styles.statusTextDark}>{STATUS_LABELS[statusNum] || 'Unknown'}</span>
                 </div>
 
                 {statusNum === 0 && (
-                  <p className={styles.actionSubtitle}>Le freelance doit déposer {formatAlph(escrowState.collateral)} ALPH pour activer le contrat. Le client peut annuler.</p>
+                  <p className={styles.actionSubtitle}>The freelancer must deposit {formatAlph(escrowState.collateral)} ALPH to activate the contract. The client can cancel.</p>
                 )}
                 {statusNum === 1 && (
-                  <p className={styles.actionSubtitle}>Le freelance doit soumettre son travail avec un lien.</p>
+                  <p className={styles.actionSubtitle}>The freelancer must submit their work with a link.</p>
                 )}
                 {statusNum === 2 && (
-                  <p className={styles.actionSubtitle}>Le client doit vérifier le travail et libérer les fonds.</p>
+                  <p className={styles.actionSubtitle}>The client must review the work and release the funds.</p>
                 )}
                 {statusNum === 3 && (
-                  <p className={styles.actionSubtitle}>L&apos;arbitre doit évaluer le litige et trancher.</p>
+                  <p className={styles.actionSubtitle}>The arbiter must evaluate the dispute and make a decision.</p>
                 )}
               </div>
 
@@ -688,7 +688,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     onClick={handleCancel}
                     disabled={actionLoading}
                   >
-                    {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Annulation...</> : <><XCircle size={18} weight="bold" color="currentColor" />Annuler & Récupérer</>}
+                    {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Cancelling...</> : <><XCircle size={18} weight="bold" color="currentColor" />Cancel & Recover</>}
                   </button>
                 )}
 
@@ -698,7 +698,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     onClick={handleAcceptDeposit}
                     disabled={actionLoading}
                   >
-                    {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Dépôt...</> : <><Check size={18} weight="bold" color="currentColor" />{`Accepter & Déposer ${formatAlph(escrowState.collateral)} ALPH`}</>}
+                    {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Depositing...</> : <><Check size={18} weight="bold" color="currentColor" />{`Accept & Deposit ${formatAlph(escrowState.collateral)} ALPH`}</>}
                   </button>
                 )}
 
@@ -707,7 +707,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <input
                         type="text"
-                        placeholder="Lien vers le livrable..."
+                        placeholder="Link to deliverable..."
                         value={deliverLink}
                         onChange={(e) => setDeliverLink(e.target.value)}
                         style={{ flex: 1, background: '#212121', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '8px 12px', color: 'white', fontSize: '12px' }}
@@ -720,7 +720,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                         disabled={actionLoading}
                         style={{ flex: 1 }}
                       >
-                        {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Abandonner...</> : <><ArrowCounterClockwise size={18} weight="bold" color="currentColor" />Abandonner</>}
+                        {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Abandoning...</> : <><ArrowCounterClockwise size={18} weight="bold" color="currentColor" />Abandon</>}
                       </button>
                       <button
                         className={`${styles.btnSuccess} gradient-hover-btn`}
@@ -728,7 +728,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                         disabled={actionLoading || !deliverLink.trim()}
                         style={{ flex: 2 }}
                       >
-                        {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Envoi...</> : <><PaperPlaneRight size={18} weight="bold" color="currentColor" />Soumettre</>}
+                        {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Submitting...</> : <><PaperPlaneRight size={18} weight="bold" color="currentColor" />Submit</>}
                       </button>
                     </div>
                   </div>
@@ -741,7 +741,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                         className={styles.btnLinkSubtle}
                         onClick={() => setShowDisputeInput(true)}
                       >
-                        Ouvrir un litige
+                        Open a dispute
                       </button>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -755,7 +755,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                               {disputeReason ? (
                                 <span>{disputeReason}</span>
                               ) : (
-                                <span className={styles.dropdownPlaceholder}>Choisir la raison du litige...</span>
+                                <span className={styles.dropdownPlaceholder}>Choose dispute reason...</span>
                               )}
                             </div>
                             <CaretDown
@@ -804,7 +804,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                             disabled={actionLoading || !disputeReason}
                             style={{ flex: 1 }}
                           >
-                            {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Envoi...</> : <><Warning size={16} weight="bold" color="currentColor" />Confirmer le litige</>}
+                            {actionLoading ? <><span className={styles.btnSpinner} style={{borderTopColor: 'currentColor'}} /> Submitting...</> : <><Warning size={16} weight="bold" color="currentColor" />Confirm dispute</>}
                           </button>
                           <button
                             onClick={() => { setShowDisputeInput(false); setDisputeReason(''); setIsDisputeDropdownOpen(false); }}
@@ -912,7 +912,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     <span className={styles.infoLabelDark}>Client</span>
                   </div>
                   <div className={styles.infoValueContainerWithIcon}>
-                    <span className={styles.infoValueMuted}>{truncateAddress(escrowState.client)}{isClient ? ' (vous)' : ''}</span>
+                    <span className={styles.infoValueMuted}>{truncateAddress(escrowState.client)}{isClient ? ' (you)' : ''}</span>
                     <Copy size={14} color="#555555" style={{ cursor: 'pointer' }} onClick={() => navigator.clipboard.writeText(escrowState.client)} />
                   </div>
                 </div>
@@ -922,7 +922,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     <span className={styles.infoLabelDark}>Freelance</span>
                   </div>
                   <div className={styles.infoValueContainerWithIcon}>
-                    <span className={styles.infoValueMuted}>{truncateAddress(escrowState.freelancer)}{isFreelancer ? ' (vous)' : ''}</span>
+                    <span className={styles.infoValueMuted}>{truncateAddress(escrowState.freelancer)}{isFreelancer ? ' (you)' : ''}</span>
                     <Copy size={14} color="#555555" style={{ cursor: 'pointer' }} onClick={() => navigator.clipboard.writeText(escrowState.freelancer)} />
                   </div>
                 </div>
@@ -932,7 +932,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
                     <span className={styles.infoLabelDark}>Arbitre</span>
                   </div>
                   <div className={styles.infoValueContainerWithIcon}>
-                    <span className={styles.infoValueMuted}>{truncateAddress(escrowState.arbiter)}{isArbiter ? ' (vous)' : ''}</span>
+                    <span className={styles.infoValueMuted}>{truncateAddress(escrowState.arbiter)}{isArbiter ? ' (you)' : ''}</span>
                     <Copy size={14} color="#555555" style={{ cursor: 'pointer' }} onClick={() => navigator.clipboard.writeText(escrowState.arbiter)} />
                   </div>
                 </div>
