@@ -22,7 +22,6 @@ import {
 } from '@phosphor-icons/react'
 import { useWallet } from '@alephium/web3-react'
 import { hexToString, ONE_ALPH, DUST_AMOUNT, stringToHex, binToHex, contractIdFromAddress } from '@alephium/web3'
-import { Escrow, TrustRegistry, AcceptAndDeposit, Deliver, ReleasePayment, OpenDispute, SubmitEvidence, ResolveDispute, RefundByFreelancer, CancelEscrow, ClaimAfterDeadline } from 'my-contracts'
 import { getTrustRegistryAddress } from '@/utils/alephium'
 import styles from '@/styles/ContractView.module.css'
 import Navbar from './Navbar'
@@ -104,34 +103,25 @@ export default function ContractView({ contractId }: ContractViewProps) {
 
       console.log('[ContractView] Fetching contract at address:', contractId)
 
-      const escrowInstance = Escrow.at(contractId)
-      const state = await escrowInstance.fetchState()
-
-      console.log('[ContractView] Contract state fetched:', state.fields)
-
-      const fields = state.fields
+      // Mock fetch
+      await new Promise(resolve => setTimeout(resolve, 800))
+      
       setEscrowState({
-        client: fields.client as string,
-        freelancer: fields.freelancer as string,
-        arbiter: fields.arbiter as string,
-        amount: fields.amount as bigint,
-        collateral: fields.collateral as bigint,
-        deadline: fields.deadline as bigint,
-        cdcHash: hexToString(fields.cdcHash as string),
-        deliverableLink: (fields.deliverableLink as string).length > 0 ? hexToString(fields.deliverableLink as string) : '',
-        status: fields.status as bigint,
-        disputeReason: (fields.disputeReason as string).length > 0 ? hexToString(fields.disputeReason as string) : '',
-        disputeEvidence: (fields.disputeEvidence as string).length > 0 ? hexToString(fields.disputeEvidence as string) : '',
-        disputeJustification: (fields.disputeJustification as string).length > 0 ? hexToString(fields.disputeJustification as string) : '',
+        client: '1ClientMockAddress123',
+        freelancer: '1FreelancerMockAddress456',
+        arbiter: '1ArbiterMockAddress789',
+        amount: BigInt(Math.round(1500 * 1e18)), // 1500 ALPH
+        collateral: BigInt(Math.round(150 * 1e18)), // 150 ALPH
+        deadline: BigInt(Date.now() + 86400000 * 7), // 7 days from now
+        cdcHash: 'Design Mission Scope',
+        deliverableLink: '',
+        status: 0n,
+        disputeReason: '',
+        disputeEvidence: '',
+        disputeJustification: '',
       })
 
-      try {
-        const registry = TrustRegistry.at(getTrustRegistryAddress())
-        const scoreResult = await registry.view.getScore({ args: { freelancer: fields.freelancer as string } })
-        setTrustScore(scoreResult.returns)
-      } catch {
-        setTrustScore(50n)
-      }
+      setTrustScore(85n)
 
     } catch (err: any) {
       console.error('Failed to fetch contract state:', err)
@@ -178,51 +168,49 @@ export default function ContractView({ contractId }: ContractViewProps) {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const execScript = (script: any, fields: any, alphAmount?: bigint) => {
-    return script.execute({
-      signer: signer!,
-      initialFields: fields,
-      attoAlphAmount: alphAmount ?? DUST_AMOUNT,
-      group: 0
-    } as any)
-  }
-
   const handleCancel = () => executeAction(async () => {
-    await execScript(CancelEscrow, { escrow: escrowContractId })
+    console.log('[Mock] Cancel Escrow')
+    await new Promise(resolve => setTimeout(resolve, 500))
   })
 
   const handleAcceptDeposit = () => executeAction(async () => {
-    if (!escrowState) return
-    await execScript(AcceptAndDeposit, { escrow: escrowContractId, collateral: escrowState.collateral }, escrowState.collateral + DUST_AMOUNT)
+    console.log('[Mock] Accept Deposit')
+    await new Promise(resolve => setTimeout(resolve, 500))
   })
 
   const handleDeliver = () => executeAction(async () => {
-    await execScript(Deliver, { escrow: escrowContractId, link: stringToHex(deliverLink) })
+    console.log('[Mock] Deliver work')
+    await new Promise(resolve => setTimeout(resolve, 500))
   })
 
   const handleRelease = () => executeAction(async () => {
-    await execScript(ReleasePayment, { escrow: escrowContractId })
+    console.log('[Mock] Release Payment')
+    await new Promise(resolve => setTimeout(resolve, 500))
   })
 
   const handleDispute = () => executeAction(async () => {
-    await execScript(OpenDispute, { escrow: escrowContractId, reason: stringToHex(disputeReason) })
+    console.log('[Mock] Open Dispute')
+    await new Promise(resolve => setTimeout(resolve, 500))
   })
 
   const handleSubmitEvidence = () => executeAction(async () => {
-    await execScript(SubmitEvidence, { escrow: escrowContractId, evidence: stringToHex(evidenceText) })
+    console.log('[Mock] Submit Evidence')
+    await new Promise(resolve => setTimeout(resolve, 500))
   })
 
   const handleResolve = (toFreelancer: boolean) => executeAction(async () => {
-    await execScript(ResolveDispute, { escrow: escrowContractId, toFreelancer, justification: stringToHex(resolveJustification) })
+    console.log('[Mock] Resolve Dispute, toFreelancer:', toFreelancer)
+    await new Promise(resolve => setTimeout(resolve, 500))
   })
 
   const handleRefund = () => executeAction(async () => {
-    await execScript(RefundByFreelancer, { escrow: escrowContractId })
+    console.log('[Mock] Refund')
+    await new Promise(resolve => setTimeout(resolve, 500))
   })
 
   const handleAutoClaim = () => executeAction(async () => {
-    await execScript(ClaimAfterDeadline, { escrow: escrowContractId })
+    console.log('[Mock] Auto Claim')
+    await new Promise(resolve => setTimeout(resolve, 500))
   })
 
   const staggerContainer = {
@@ -246,6 +234,8 @@ export default function ContractView({ contractId }: ContractViewProps) {
   const isFreelancer = stripGroup(escrowState?.freelancer || '') === userAddress
   const isArbiter = stripGroup(escrowState?.arbiter || '') === userAddress
   const statusNum = escrowState ? Number(escrowState.status) : -1
+
+  const computedRole = isClient ? 'client' : isFreelancer ? 'freelancer' : isArbiter ? 'arbitrator' : 'visitor';
 
   if (escrowState && userAddress) {
     console.log('[Roles] User address:', userAddress)
@@ -317,7 +307,7 @@ export default function ContractView({ contractId }: ContractViewProps) {
 
   return (
     <div className={styles.page}>
-      <Navbar />
+      <Navbar userRole={computedRole} />
 
       <main className={styles.main}>
         <div className={styles.container}>

@@ -12,10 +12,23 @@ function truncateAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
-export default function Navbar() {
+interface NavbarProps {
+  userRole?: 'visitor' | 'arbitrator' | 'freelancer' | 'client'
+}
+
+export default function Navbar({ userRole = 'visitor' }: NavbarProps) {
   const { connectionStatus, account } = useWallet()
   const isConnected = connectionStatus === 'connected'
   const [showDisconnectDialog, setShowDisconnectDialog] = useState(false)
+
+  const getRoleGradient = (role: string) => {
+    switch (role) {
+      case 'arbitrator': return 'linear-gradient(135deg, #F5A524 0%, #FFD166 100%)';
+      case 'freelancer': return 'linear-gradient(135deg, #F63BE3 0%, #C827ED 100%)';
+      case 'client': return 'linear-gradient(135deg, #FF5F4A 0%, #F6A83B 100%)';
+      default: return '#A1A1AA';
+    }
+  }
 
   useEffect(() => {
     if (showDisconnectDialog) {
@@ -60,14 +73,21 @@ export default function Navbar() {
         </div>
         <div className={styles.right}>
           {isConnected && account ? (
-            <button
-              className={`${styles.connectButton} ${styles.connectedButton}`}
-              onClick={() => setShowDisconnectDialog(true)}
-              title="Click to disconnect"
-            >
-              <span className={styles.connectedDot} />
-              <span>{truncateAddress(account.address)}</span>
-            </button>
+            <div style={{width: '100%', height: '100%', justifyContent: 'flex-start', alignItems: 'center', gap: 12, display: 'inline-flex'}}>
+                <div style={{justifyContent: 'flex-start', alignItems: 'center', gap: 8, display: 'flex'}}>
+                    <div 
+                      onClick={() => setShowDisconnectDialog(true)}
+                      style={{cursor: 'pointer', paddingTop: 8, paddingBottom: 8, paddingLeft: 12, paddingRight: 16, background: '#1A1A1A', overflow: 'hidden', borderRadius: 1024, outline: '1px rgba(255, 255, 255, 0.12) solid', outlineOffset: '-1px', justifyContent: 'flex-start', alignItems: 'center', gap: 16, display: 'flex'}}>
+                        <div style={{justifyContent: 'flex-start', alignItems: 'center', gap: 8, display: 'flex'}}>
+                            <div style={{padding: 2.40, position: 'relative', overflow: 'hidden', borderRadius: 14.40, flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', gap: 30, display: 'inline-flex'}}>
+                                <div style={{width: 16, height: 16, borderRadius: '50%', background: getRoleGradient(userRole)}} />
+                            </div>
+                            <div style={{color: '#E4E4E7', fontSize: 12, fontFamily: 'Inter', fontWeight: '500', lineHeight: '16px', wordWrap: 'break-word'}}>{truncateAddress(account.address)}</div>
+                        </div>
+                        <div style={{color: '#555555', fontSize: 14, fontFamily: 'Inter', fontWeight: '500', lineHeight: '20px', wordWrap: 'break-word'}}>Log out</div>
+                    </div>
+                </div>
+            </div>
           ) : (
             <AlephiumConnectButton.Custom>
               {({ show }) => (

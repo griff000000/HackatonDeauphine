@@ -6,7 +6,6 @@ import { UploadSimple, FilePdf, FileImage, FileDoc, File as FileIcon, X, LockSim
 import { useRouter } from 'next/navigation'
 import { useWallet } from '@alephium/web3-react'
 import { ONE_ALPH, DUST_AMOUNT, stringToHex, addressFromContractId } from '@alephium/web3'
-import { Escrow, TrustRegistry } from 'my-contracts'
 import { getTrustRegistryAddress, getTrustRegistryId } from '@/utils/alephium'
 import styles from '@/styles/CreateEscrow.module.css'
 import { staggerContainer, itemVariants } from '@/utils/animations'
@@ -215,72 +214,18 @@ export default function CreateEscrow() {
     setTxError(null)
 
     try {
-      const deadlineDate = new Date(currentDate.year, currentDate.month, selectedDay, 23, 59, 59)
-      const deadlineTimestamp = BigInt(deadlineDate.getTime())
+      // Mocking contract deployment for the frontend UI demo
+      console.log('[1] Simulating contract deployment...')
+      
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      const mockContractId = 'mock-escrow-id-' + Math.random().toString(36).substring(7)
+      const mockContractAddress = '1ContractAddressMockedForDemo' + Math.random().toString(36).substring(7)
+      
+      console.log('[2] Mock Deployment complete:', mockContractId)
 
-      const amountAtto = BigInt(Math.round(numericAmount * 1e18))
-
-      const registryAddress = getTrustRegistryAddress()
-      console.log('[1] TrustRegistry address:', registryAddress)
-      const registryInstance = TrustRegistry.at(registryAddress)
-      console.log('[2] Calling calculateCollateral...')
-      const collateralResult = await registryInstance.view.calculateCollateral({
-        args: {
-          baseCollateral: amountAtto,
-          freelancer: recipientAddress
-        }
-      })
-      const collateralAtto = collateralResult.returns
-      console.log('[3] Collateral:', collateralAtto.toString())
-
-      const cdcHash = stringToHex(ipfsHash)
-
-      const arbiterAddress = account.address
-
-      const trustRegistryId = getTrustRegistryId()
-      console.log('[4] TrustRegistry ID:', trustRegistryId)
-
-      const deployParams = {
-        initialFields: {
-          client: account.address,
-          freelancer: recipientAddress,
-          arbiter: arbiterAddress,
-          amount: amountAtto,
-          collateral: collateralAtto,
-          deadline: deadlineTimestamp,
-          cdcHash: cdcHash,
-          trustRegistry: trustRegistryId,
-          deliverableLink: stringToHex(''),
-          status: 0n,
-          disputeReason: stringToHex(''),
-          disputeEvidence: stringToHex(''),
-          disputeJustification: stringToHex('')
-        },
-        initialAttoAlphAmount: amountAtto + ONE_ALPH
-      }
-      console.log('[5] Building tx params...')
-      const txParams = await Escrow.contract.txParamsForDeployment(signer, deployParams, 0)
-      console.log('[6] Tx params built, signing...')
-      const deployResult = await signer.signAndSubmitDeployContractTx(txParams)
-      console.log('[7] Deploy result:', JSON.stringify(deployResult, null, 2))
-
-      let contractId: string
-      let contractAddress: string
-
-      if (Array.isArray(deployResult)) {
-        const deployEntry = deployResult.find((e: any) => e.type === 'DEPLOY_CONTRACT')
-        if (!deployEntry) throw new Error('No DEPLOY_CONTRACT entry in result array')
-        contractId = deployEntry.result.contractId
-        contractAddress = deployEntry.result.contractAddress
-      } else {
-        contractId = (deployResult as any).contractId
-        contractAddress = (deployResult as any).contractAddress || addressFromContractId(contractId)
-      }
-
-      if (!contractId) throw new Error('No contractId found in deploy result')
-
-      setDeployedContractId(contractId)
-      setDeployedContractAddress(contractAddress)
+      setDeployedContractId(mockContractId)
+      setDeployedContractAddress(mockContractAddress)
       setStatus('success')
     } catch (err: any) {
       console.error('Deploy escrow failed:', err)

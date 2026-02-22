@@ -1,0 +1,291 @@
+.pageContainer {
+  min-height: 100vh;
+  background-color: #232323;
+  color: #FFFFFF;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main Content Area */
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 24px;
+  position: relative;
+}
+
+.backButtonContainer {
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #888888;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.backButton:hover {
+  color: #FFFFFF;
+}
+
+/* Arbitration Column */
+.arbitrationColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.card {
+  background: #1E1E1E;
+  border: 1px solid #2A2A2A;
+  border-radius: 16px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header Card */
+.headerCard {
+  width: 100%;
+  padding: 32px;
+  background: #1A1A1A;
+  overflow: hidden;
+  border-radius: 24px;
+  outline: 1px rgba(255, 255, 255, 0.12) solid;
+  outline-offset: -1px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 24px;
+}
+
+.headerContent {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.headerTitle {
+  align-self: stretch;
+  color: #888888;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+.headerSubtitleContainer {
+  align-self: stretch;
+  display: inline-flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 100px;
+}
+
+.headerSubtitle {
+  color: #555555;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+/* Arguments Card */
+.argumentsCard {
+  width: 100%;
+  padding: 32px 32px 24px 32px;
+  background: #1A1A1A;
+  border-radius: 16px;
+  outline: 1px rgba(255, 255, 255, 0.12) solid;
+  outline-offset: -1px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 16px;
+}
+
+.argumentsContent {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.argumentsHeader {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.sectionLabelContainer {
+  padding: 0 2px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.sectionLabel {
+  color: #555555;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+.reasonTitleContainer {
+  align-self: stretch;
+  display: inline-flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.reasonTitle {
+  flex: 1 1 0;
+  color: #888888;
+  font-size: 18px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  line-height: 23.40px;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+.argumentBlock {
+  align-self: stretch;
+  padding-bottom: 8px;
+  border-bottom: 0.67px solid #27272A;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.argumentParticipant {
+  padding: 0 2px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.participantName {
+  color: #E4E4E7;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  word-wrap: break-word;
+}
+
+.clientGradientCircle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF5F4A 0%, #F6A83B 100%);
+}
+
+.freelanceGradientCircle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F63BE3 0%, #C827ED 100%);
+}
+
+.argumentText {
+  align-self: stretch;
+  color: #555555;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+/* Decision Card / Slider */
+.decisionCard {
+  width: 100%;
+  padding: 32px;
+  background: #1A1A1A;
+  border-radius: 24px;
+  outline: 1px rgba(255, 255, 255, 0.12) solid;
+  outline-offset: -1px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 24px;
+}
+
+.decisionTitle {
+  align-self: stretch;
+  color: #888888;
+  font-size: 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  line-height: 23.40px;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+.decisionContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 32px;
+  width: 100%;
+}
+
+.arcSliderWrapper {
+  width: 100%;
+  position: relative;
+}
+
+.confirmButton {
+  align-self: stretch;
+  width: 100%;
+  padding: 16px 20px;
+  background-color: #FFFFFF;
+  color: #000000;
+  border: none;
+  border-radius: 1024px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  line-height: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+

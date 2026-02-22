@@ -1,5 +1,4 @@
 import { web3, NetworkId } from '@alephium/web3'
-import { loadDeployments } from 'my-contracts/deployments'
 
 export const NETWORK: NetworkId = (process.env.NEXT_PUBLIC_NETWORK as NetworkId) || 'devnet'
 
@@ -16,12 +15,12 @@ export function initWeb3() {
   web3.setCurrentNodeProvider(NODE_URL)
 }
 
-const deployments = loadDeployments(NETWORK)
-
 export function getTrustRegistryAddress(): string {
-  return deployments.contracts.TrustRegistry.contractInstance.address
+  // Mock for frontend demo
+  return "1MockTrustRegistryAddress"
 }
 
 export function getTrustRegistryId(): string {
-  return deployments.contracts.TrustRegistry.contractInstance.contractId
+  // Mock for frontend demo
+  return "mock-trust-registry-id"
 }
